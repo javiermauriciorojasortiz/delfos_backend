@@ -21,3 +21,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::get('usuarios', [UsuarioController::class, 'index']);
+Route::get('login/{id}/{pass}', [UsuarioController::class, 'show']);
