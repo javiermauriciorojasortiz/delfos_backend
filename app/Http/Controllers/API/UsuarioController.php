@@ -43,15 +43,17 @@ class UsuarioController extends Controller
             ->get();
 
         if (count($usuario) > 0) {
-            return response()->json([
-                'res' => true,
-                'usuario' => $usuario,
-            ]);
+            return $usuario;
+            // response()->json([
+            //     'res' => true,
+            //     'usuario' => $usuario,
+            // ]);
         } else {
-            return response()->json([
-                'res' => false,
-                'usuario' => $usuario,
-            ]);
+            return  false;
+            // response()->json([
+            //     'res' => false,
+            //     'usuario' => $usuario,
+            // ]);
         }
     }
 
