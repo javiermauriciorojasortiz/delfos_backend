@@ -22,3 +22,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::get('usuarios', [UsuarioController::class, 'index']);
 Route::get('login/{id}/{pass}', [UsuarioController::class, 'show']);
+
+// Route::get('consultarusuarios/{id}', [UsuarioController::class, 'buscar']);
+Route::get('consultarusuarios', [UsuarioController::class, 'buscar']);
+
+
+Route::post('consultarauditoria', [UsuarioController::class, 'consultarAuditoria']);
