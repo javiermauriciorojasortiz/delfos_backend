@@ -134,6 +134,13 @@ class UsuarioController extends Controller
         $usuario = $this->obtenerUsuarioSesion($request);
         return $usuario->consultarAuditoria($this->obtenerParametros($request));
     }
+
+    public function autenticar(Request $request) {
+        $params = $this->obtenerParametros($request);
+        $params["ip"] = $request->ip();
+        $usuario = new Usuario();
+        return $usuario->autenticar($params);;
+    }
 //   //Obtener tipos de auditoria
 //   public function obtenerTiposAuditoria(){
 //     $usuario = $this->obtenerUsuarioSesion();

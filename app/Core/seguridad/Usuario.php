@@ -10,13 +10,20 @@ class Usuario {
     //Información del usuario autenticado
     public $usuario;
     //Obtiene la información de usuario de la base de datos
-    function __construct(string $sesion) {
+    function __construct(string $sesion = null) {
       //Consultar en la base de datos
-      $rta = DB::select('select usr_id id from seg.ses_sesion where ses_id = ?', array($sesion));
-      if (count($rta) == 0) throw new Exception("Sesión no activa");
-      $this->usuario = $rta[0];
+      if($sesion != null ) {
+        $rta = DB::select('select usr_id id from seg.ses_sesion where ses_id = ?', array($sesion));
+        if (count($rta) == 0) throw new Exception("Sesión no activa");
+        $this->usuario = $rta[0];
+      }
     }
-
+    //Obtiene el usuario si el login es correcto
+    function autenticar($params){
+      $rta = DB::select('select * from seg.fnusr_autenticar(:tipousuario, :emailidentificacion, :clave, :ip)',$params);
+      $this->usuario = $rta;
+      return $rta;
+    }
 
     //Obtener lista de usuarios
     function consultarUsuarios($params) {

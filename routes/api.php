@@ -25,6 +25,6 @@ Route::get('login/{id}/{pass}', [UsuarioController::class, 'show']);
 
 // Route::get('consultarusuarios/{id}', [UsuarioController::class, 'buscar']);
 Route::get('consultarusuarios', [UsuarioController::class, 'buscar']);
-
+Route::post('login', [UsuarioController::class, 'autenticar']);
 
 Route::post('consultarauditoria', [UsuarioController::class, 'consultarAuditoria']);
