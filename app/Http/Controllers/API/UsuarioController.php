@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\Seguridad\UsuarioModel;
 use PhpParser\Node\Expr\Empty_;
 use Illuminate\Support\Facades\DB;
-// include("App\Core\seguridad");
 use App\Core\Seguridad\Usuario;
+use App\Core\Seguridad\respuestaAPI;
+use App\Mail\Usuario as MailUsuario;
 use DateTime;
+use Exception;
 
 class UsuarioController extends Controller
 {
@@ -73,17 +75,12 @@ class UsuarioController extends Controller
             DB::rollback();
             throw $e;
         }
-        // foreach (UsuarioModel::all() as $cur) {
-        //   array_push($rta,  $cur -> usr_id);
-        // }
-        // return $rta;
     }
     //Forma genérica de obtener el usuario de sesión
     private function obtenerUsuarioSesion(Request $request){
-        $sesion = $request->header('token', 'cJnYmW6vgo1HPqr4WYR2RT8OgurEOwQXtriIHSx3mvEPeNxYx4');
+        $sesion = $request->header("Authorization");
         return new Usuario($sesion);
     }
-
     /**
      * Update the specified resource in storage.
      *
@@ -109,9 +106,12 @@ class UsuarioController extends Controller
     //Obtener el arreglo de valores de los parámetros enviados
     public function obtenerParametros(Request $request) {
         $params = $request->input(); //["descripcion", "email", "fechaFin", "fechaIni", "tipoAuditoria", "usuario"];
+        //throw new Exception(implode("|",array_keys($params)) . '------' . implode("|",$params));
+
         $valores = [];
         foreach(array_keys($params) as &$key) {
             $valor = $params[$key];
+            //throw new Exception("el puto valor " . $valor);
             if(str_starts_with($key, "fecha"))
             {
                  if($params[$key]== "") {
@@ -121,18 +121,31 @@ class UsuarioController extends Controller
                     $fecha->setDate($valor['year'], $valor['month'], $valor['day']);
                     $valor = $fecha;
                 }
-            } else if ($valor == "") {
+            } else if ($valor === "") {
+                throw new Exception("nulifico el valor");
                 $valor = null;
             }
-            $valores[$key] = $valor;// $valor;
+            //throw new Exception(strtolower($key) . ":" . $valor);
+            $valores[strtolower($key)] = $valor;// $valor;
         }
+        //throw new Exception(count($valores));
         return $valores;//["tipoAuditoria"=>null, "usuario" =>null, "email"=>null, "descripcion"=>null, "fechaIni"=>null, "fechaFin" => null ];//$valores;
     }
 
     //Consultar la auditoria {tipoAuditoria: 0, usuario: "", email: "", descripcion: "", fechaIni: "", …}
     public function consultarAuditoria(Request $request){
+        //throw new Exception($request);
         $usuario = $this->obtenerUsuarioSesion($request);
-        return $usuario->consultarAuditoria($this->obtenerParametros($request));
+        $parametros = $this->obtenerParametros($request);
+        return $usuario->consultarAuditoria($parametros);
+    }
+    //Lista de usuarios desde la consulta
+    public function consultarUsuarios(Request  $request){
+        $usuario = $this->obtenerUsuarioSesion($request);
+        $parametros = $this->obtenerParametros($request);
+        //throw new Exception(implode("|",$parametros));
+        //throw new Exception($request);
+        return $usuario->consultarUsuarios($parametros);
     }
 
     public function autenticar(Request $request) {
@@ -140,6 +153,40 @@ class UsuarioController extends Controller
         $params["ip"] = $request->ip();
         $usuario = new Usuario();
         return $usuario->autenticar($params);;
+    }
+    //Autenticar al usuario por el token guardado en las cookies del cliente
+    public function autenticarporToken(Request $request){
+        $params = $this->obtenerParametros($request);
+        $params["ip"] = $request->ip();
+        $usuario = new Usuario();
+        return $usuario->autenticarporToken($params);;
+    }
+    //Enviar correo 
+    public function enviarcorreo(Request $request){
+        $rta = Array(); //new respuestaAPI();
+        $rta["codigo"] = 0;
+
+        DB::beginTransaction();
+        try {
+            $params = $this->obtenerParametros($request);
+            $params["ip"] = $request->ip();
+            $usuario = new Usuario();
+            $data = $usuario->enviarCorreo($params);
+            $rta["codigo"] = 1;
+            $rta["descripcion"] = "Exitoso";
+            $rta["data"] = $data;
+            DB::commit();
+        } catch(\Exception $ex) {
+            DB::rollback();
+            $rta["codigo"] = 0;
+            $rta["descripcion"] = $ex->getMessage();
+        }
+        return $rta;
+    }
+    //Obtiene las opciones de menú del usuario
+    public function obtenerMenuUsuario(Request $request){
+        $usuario = $this->obtenerUsuarioSesion($request);
+        return $usuario->obtenerMenuUsuario();
     }
 //   //Obtener tipos de auditoria
 //   public function obtenerTiposAuditoria(){
@@ -172,13 +219,6 @@ class UsuarioController extends Controller
 //     if(appUtilService.dummy) return new Observable<Usuario>((observer) => {observer.next(listaUsr[0]);});
 //     return this.http.post<Usuario>(`${this.endPoint}/login`, forma);
 //   }
-//   //Lista de usuarios desde la consulta
-//   public function consultaUsuarios(query : any){
-//     $usuario = this->obtenerUsuarioSesion();
-
-//     if(appUtilService.dummy) return new Observable<Usuario[]>((observer) => {observer.next(listaUsr);});
-//     return this.http.post<Usuario[]>(`${this.endPoint}/consultarusuarios`, query);
-//   }
 //   //Obtener usuario por id
 //   public function obtenerUsuarioporID(id: number){
 //     $usuario = this->obtenerUsuarioSesion();
@@ -186,13 +226,7 @@ class UsuarioController extends Controller
 //     if(appUtilService.dummy) return new Observable<Usuario>((observer) => {observer.next(listaUsr[0]);});
 //     return this.http.get<Usuario>(`${this.endPoint}/obtenerusuario/id?${id}`);   
 //   }
-//   //Obtiene las opciones de menú del usuario
-//   public function obtenerMenuUsuario(){
-//     $usuario = this->obtenerUsuarioSesion();
 
-//     if(appUtilService.dummy) return new Observable<Opcion[]>((observer) => {observer.next(listaOpc);});
-//     return this.http.get<Opcion[]>(`${this.endPoint}/obtenermenuusuario`);      
-//   }
 //   //Establece el usuario y retorna el número
 //   public function establecerUsuario(usuario : Usuario){
 //     $usuario = this->obtenerUsuarioSesion();

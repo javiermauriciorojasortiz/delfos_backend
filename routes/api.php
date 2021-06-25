@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\API\CatalogoController;
+use App\Http\Controllers\API\DivipolaController;
+use App\Http\Controllers\API\EAPBController;
+use App\Http\Controllers\API\ParametroController;
 use App\Http\Controllers\API\UsuarioController;
 use App\Models\Seguridad\UsuarioModel;
 use Illuminate\Http\Request;
@@ -28,3 +32,16 @@ Route::get('consultarusuarios', [UsuarioController::class, 'buscar']);
 Route::post('login', [UsuarioController::class, 'autenticar']);
 
 Route::post('consultarauditoria', [UsuarioController::class, 'consultarAuditoria']);
+Route::post('autenticar', [UsuarioController::class, 'autenticarporToken']);
+Route::post('enviarcorreo', [UsuarioController::class, 'enviarcorreo']);
+Route::get('obtenermenuusuario', [UsuarioController::class, 'obtenerMenuUsuario']);
+Route::post('consultarusuarios', [UsuarioController::class, 'consultarUsuarios']);
+//Catalogos
+Route::post('consultarcatalogos', [CatalogoController::class, 'consultarCatalogos']);
+//Parametros
+Route::post('consultarparametros', [ParametroController::class, 'consultarParametros']);
+//Divipola
+Route::post('consultardivipolas', [DivipolaController::class, 'consultarDivipolas']);
+//EAPB
+Route::post('consultareapbs', [EAPBController::class, 'consultarEAPBs']);
+
