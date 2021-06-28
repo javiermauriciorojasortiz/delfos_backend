@@ -22,4 +22,24 @@ class EAPB extends Core{
                       where LOWER(eap_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'
                       and LOWER(eap_nombre) like '%' || LOWER(coalesce(:nombre,'')) || '%'");
   }
+  //Eliminar la EPAB por id
+  function eliminarEAPB() {
+    return $this->actualizarData("DELETE conf.eap_eapb where eap_id = :id"); 
+  }
+  //Establece la EPAB y retorna el número
+  function establecerEAPB($contactoprincipalid, $contactosecundarioid) {
+    $params = $this->parametros;
+    $params["contactoprincipalid"] = $contactoprincipalid;
+    $params["contactosecundarioid"] = $contactosecundarioid;
+    if($this->parametros["id"] == 0){
+      return $this->actualizarData("INSERT INTO conf.eap_eapb (eap_id, eap_codigo, eap_nombre, eap_default, cct_id_principal, cct_id_secundario, 
+            eap_fecha_auditoria, usr_id_auditoria) 
+      VALUES (nextval('conf.seceap'), :codigo, :nombre, :default, :contactoprincipalid, :contactosecundarioid,
+            current_timestamp, :usuario)", $params, true);
+    } else {
+      return $this->actualizarData("UPDATE conf.eap_eapb SET eap_codigo = :codigo, eap_nombre = :nombre, eap_default = :default, 
+            cct_id_principal = :contactoprincipalid, cct_id_secundario = :contactosecundarioid, 
+            eap_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario WHERE eap_id = :id", $params, true);
+    }
+  }
 }

@@ -20,6 +20,7 @@ class Usuario extends Core {
     function autenticar(){
       $params = $this->parametros;
       $params["ip"] = $this->variablesServidor["ip"];
+      $params["clave"] = $this->encriptarClave($params["clave"]);
       $rta = DB::select('SELECT * FROM seg.fnusr_autenticar(:tipousuario, :emailidentificacion, :clave, :ip)', $params);
       
       if(count($rta) > 0) {
@@ -111,11 +112,19 @@ class Usuario extends Core {
       }
       return $rta;
     }
+    //Encripción de clave
+    private function encriptarClave(string $clave) {
+      $pass = $clave . 'DELFOS';
+      $method = 'aes128';
+      return $clave;//openssl_encrypt ($clave, $method, $pass);
+    }
     //Cambiar Clave. Retorna 0 si es exitosa o el número de claves no repetidas
     public function cambiarClave(){
-        $rta = $this->obtenerResultset("SELECT * FROM seg.fnusr_actualizarclave(:id,:claveanterior,:clavenueva)", 
-          $this->parametros);
-        return $rta[0]->fnusr_actualizarclave;
+      $params = $this->parametros;
+      $params["claveanterior"] = $this->encriptarClave($params["claveanterior"]);
+      $params["clavenueva"] = $this->encriptarClave($params["clavenueva"]);
+      $rta = $this->obtenerResultset("SELECT * FROM seg.fnusr_actualizarclave(:id,:claveanterior,:clavenueva)", $params);
+      return $rta[0]->fnusr_actualizarclave;
     }
     //Obtener usuario por id
     public function obtenerUsuarioporID(){
@@ -148,12 +157,12 @@ class Usuario extends Core {
             WHERE usr_id =  :id", null, true, ["clave","auditoria"]);
       }
     }
-  //Obtiene la lista de roles posibles de la base de datos
-  public function obtenerTiposUsuario() {
-    return $this->obtenerResultset("SELECT tus_id id, tus_nombre nombre, cat_tipo_entidad tipoentidad FROM seg.tus_tipo_usuario");   
-  }
-  //Obtiene la lista de estados del usuario
-  public function obtenerEstadosUsuario(){
-    return $this->obtenerResultset("SELECT eus_id id, eus_nombre nombre, eus_activo activo FROM seg.eus_estado_usuario");   
-  }
+    //Obtiene la lista de roles posibles de la base de datos
+    public function obtenerTiposUsuario() {
+      return $this->obtenerResultset("SELECT tus_id id, tus_nombre nombre, cat_tipo_entidad tipoentidad FROM seg.tus_tipo_usuario");   
+    }
+    //Obtiene la lista de estados del usuario
+    public function obtenerEstadosUsuario(){
+      return $this->obtenerResultset("SELECT eus_id id, eus_nombre nombre, eus_activo activo FROM seg.eus_estado_usuario");   
+    }
 }
