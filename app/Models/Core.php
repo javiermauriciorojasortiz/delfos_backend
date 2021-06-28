@@ -71,10 +71,10 @@ class Core {
             throw new Exception("Sesión no activa. Por favor autentíquese nuevamente");
     }
     //Insertar auditoria
-    public function insertarAuditoria(int $tipoAuditoria, string $descripcion, string $observacion = null) : void {
+    public function insertarAuditoria(int $usuarioid, int $tipoAuditoria, string $descripcion, bool $exitoso, string $operacion, string $observacion = null) : void {
         $auditoria = new Auditoria($this->request, 0);
-        $auditoria->usuarioID = $this->usuarioID;
-        $auditoria->insertar($tipoAuditoria, $descripcion, $observacion);
+        $auditoria->usuarioID = $usuarioid;
+        $auditoria->insertar($tipoAuditoria, $descripcion, $exitoso, $operacion, $observacion);
     }
     //-----------------------------------------------------------------------------
     //Funciones de base de datos: La aplicación solo ejecutará operaciones contra la BD por acá

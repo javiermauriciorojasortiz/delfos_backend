@@ -14,4 +14,19 @@ class CatalogoController extends Controller
     $catalogo = new Catalogo($request, 0);
     return $catalogo->consultarCatalogos();
   }
+  //Obtener Valores catálogo por código
+  function obtenerValoresporCodigoCatalogo(Request $request) {
+    $catalogo = new Catalogo($request, 0);
+    return $catalogo->obtenerValoresporCodigoCatalogo(); 
+  }
+  //Elimina el valor de un catálogo
+  function eliminarValorCatalogo(Request $request) {
+    $catalogo = new Catalogo($request, 0);
+    return $catalogo->eliminarValorCatalogo(); 
+  }
+  //Establece el valor del catalogo y retorna el número
+  function establecerValorCatalogo(Request $request){
+    $catalogo = new Catalogo($request, 0);
+    return $catalogo->establecerValorCatalogo(); 
+  }
 }

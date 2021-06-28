@@ -51,12 +51,26 @@ Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAu
 //----------------------------------------------------------------------------------------
 //Catalogos
 Route::post('consultarcatalogos', [CatalogoController::class, 'consultarCatalogos']);
+Route::post('obtenervaloresporcodigocatalogo', [CatalogoController::class, 'obtenerValoresporCodigoCatalogo']);
+Route::post('eliminarvalorcatalogo', [CatalogoController::class, 'eliminarValorCatalogo']);
+Route::post('establecervalorcatalogo', [CatalogoController::class, 'establecerValorCatalogo']);
 //Parametros
 Route::post('consultarparametros', [ParametroController::class, 'consultarParametros']);
 Route::post('establecerparametro', [ParametroController::class, 'establecerParametro']);
 Route::get('obtenerparametroporcodigo', [ParametroController::class, 'obtenerParametroporCodigo']);
 //Divipola
 Route::post('consultardivipolas', [DivipolaController::class, 'consultarDivipolas']);
+Route::post('eliminardivipola', [DivipolaController::class, 'eliminarDivipola']);
+Route::post('establecerdivipola', [DivipolaController::class, 'establecerDivipola']);
+Route::post('obtenermunicipiosporiddivipola', [DivipolaController::class, 'obtenerMunicipiosporIDDivipola']);
+Route::post('establecermunicipio', [DivipolaController::class, 'establecerMunicipio']);
+Route::post('eliminarmunicipio', [DivipolaController::class, 'eliminarMunicipio']);
+Route::post('obtenerzonasporidmunicipio', [DivipolaController::class, 'obtenerZonasporIDMunicipio']);
+Route::post('establecerzona', [DivipolaController::class, 'establecerZona']);
+Route::post('eliminarzona', [DivipolaController::class, 'eliminarZona']);
+Route::post('obtenerbarriosporidzona', [DivipolaController::class, 'obtenerBarriosporIDZona']);
+Route::post('eliminarbarrio', [DivipolaController::class, 'eliminarBarrio']);
+Route::post('establecerbarrio', [DivipolaController::class, 'establecerBarrio']);
 //EAPB
 Route::post('consultareapbs', [EAPBController::class, 'consultarEAPBs']);
 //UPGD-UI

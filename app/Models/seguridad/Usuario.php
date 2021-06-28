@@ -23,8 +23,8 @@ class Usuario extends Core {
       $rta = DB::select('SELECT * FROM seg.fnusr_autenticar(:tipousuario, :emailidentificacion, :clave, :ip)', $params);
       
       if(count($rta) > 0) {
-        $observacion = $rta[0]->estadonombre;
-        $this->insertarAuditoria($rta[0]->id, 1, "Autenticación por clave", $observacion); //Existe el usuario
+        $observacion = "Estado " . $rta[0]->estadonombre;
+        $this->insertarAuditoria($rta[0]->id, 1, "Autenticación por clave", true, "G", $observacion); //Existe el usuario
       }
       return $rta;
     }

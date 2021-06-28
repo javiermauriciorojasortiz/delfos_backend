@@ -14,4 +14,5 @@ class EAPBController extends Controller
     $EAPB = new EAPB($request, 13);
     return $EAPB->consultarEAPBs();
   }
+  
 }

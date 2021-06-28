@@ -14,4 +14,48 @@ class DivipolaController extends Controller
     $catalogo = new Divipola($request, 12);
     return $catalogo->consultarDivipolas();
   }
+  function eliminarDivipola(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->eliminarDivipola();
+  }
+  function establecerDivipola(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->establecerDivipola();
+  }
+  function obtenerMunicipiosporIDDivipola(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->obtenerMunicipiosporIDDivipola();
+  }
+  function establecerMunicipio(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->establecerMunicipio();
+  }
+  function eliminarMunicipio(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->eliminarMunicipio();
+  }
+  function obtenerZonasporIDMunicipio(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->obtenerZonasporIDMunicipio();
+  }
+  function establecerZona(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->establecerZona();
+  }
+  function eliminarZona(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->eliminarZona();
+  }
+  function obtenerBarriosporIDZona(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->obtenerBarriosporIDZona();
+  }
+  function eliminarBarrio(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->eliminarBarrio();
+  }
+  function establecerBarrio(Request $request){
+    $catalogo = new Divipola($request, 12);
+    return $catalogo->establecerBarrio();
+  }
 }
