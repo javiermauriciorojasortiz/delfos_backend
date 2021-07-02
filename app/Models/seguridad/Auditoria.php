@@ -45,7 +45,7 @@ class Auditoria extends Core {
       "tipoauditoria" => $tipoAuditoria,
       "descripcion" => $descripcion,
       "observacion" => $observacion,
-      "usuario" => $this->usuarioID,
+      "usuario" => Core::$usuarioID,
       "exitoso" => $exitoso,
       "operacion" => $operacion
     );

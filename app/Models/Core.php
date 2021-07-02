@@ -17,7 +17,7 @@ class Core {
     //Verifica si ya se validó la sesión para hacer operaciones con la base de datos
     public static $sesionValidada = false;
     //Identificador de usuario de sesión
-    public $usuarioID;
+    public static $usuarioID;
     //Opción desde la que se realiza la operación
     private $opcion = 1000000;
     //Request enviado
@@ -66,14 +66,14 @@ class Core {
                         "ip" => $this->variablesServidor["ip"], 
                         "opcion" => $this->opcion);
         $rta = DB::select("select seg.fnusr_validarsesion(:sesion, :ip, :opcion)", $params);
-        $this->usuarioID = $rta[0]->fnusr_validarsesion;
-        if($this->usuarioID == 0) 
+        Core::$usuarioID = $rta[0]->fnusr_validarsesion;
+        if(Core::$usuarioID == 0) 
             throw new Exception("Sesión no activa. Por favor autentíquese nuevamente");
     }
     //Insertar auditoria
     public function insertarAuditoria(int $usuarioid, int $tipoAuditoria, string $descripcion, bool $exitoso, string $operacion, string $observacion = null) : void {
         $auditoria = new Auditoria($this->request, 0);
-        $auditoria->usuarioID = $usuarioid;
+        Core::$usuarioID = $usuarioid;
         $auditoria->insertar($tipoAuditoria, $descripcion, $exitoso, $operacion, $observacion);
     }
     //-----------------------------------------------------------------------------
@@ -85,12 +85,13 @@ class Core {
         if(Core::$sesionValidada == false) $this->validarSesion();
         Core::$sesionValidada = true;
         if($params == null) $params = $this->parametros;
-        if($addUsuario === true) $params["usuario"] = $this->usuarioID;
+        if($addUsuario == true) $params["usuario"] = Core::$usuarioID;
         if($excluir != null) {
            foreach($excluir as $campo) {
-             unset($params, $campo);
+             unset($params[$campo]);
            }
         }
+
         return DB::select($consulta, $params);
     }
     //Ejecutar consulta sin retorno
@@ -99,10 +100,10 @@ class Core {
          if(Core::$sesionValidada == false) $this->validarSesion();
          Core::$sesionValidada = true;
          if($params === null) $params = $this->parametros;
-         if($addUsuario === true) $params["usuario"] = $this->usuarioID;
+         if($addUsuario === true) $params["usuario"] = Core::$usuarioID;
          if($excluir != null) {
             foreach($excluir as $campo) {
-              unset($params, $campo);
+              unset($params[$campo]);
             }
          }
          return DB::update($consulta, $params);    

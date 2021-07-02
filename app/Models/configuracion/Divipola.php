@@ -25,6 +25,11 @@ class Divipola extends Core{
         where LOWER(dvp_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'
           and LOWER(dvp_nombre) like '%' || LOWER(coalesce(:nombre,'')) || '%'");
   }
+  //Listar divipolas
+  function listarDivipolas(){
+    return $this->obtenerResultset("SELECT dvp_id id, dvp_codigo codigo, dvp_nombre nombre,
+      pai_id paisid, dvp_ent_territorial entidadTerritorial from conf.dvp_divipola d order by dvp_nombre");
+  }
   //Eliminar Divipola por id
   function eliminarDivipola() {
     return $this->actualizarData("DELETE conf.dvp_divipola where dvp_id = :id"); 
@@ -47,10 +52,10 @@ class Divipola extends Core{
   function obtenerMunicipiosporIDDivipola() {
     return $this->obtenerResultset("SELECT mnc_id id, dvp_id departamentoid, mnc_nombre nombre,
       mnc_codigo codigo, mnc_ent_territorial entidadTerritorial,
-      usr_primer_nombre || ' ' || usr_primer_apellido || ' ' || to_char(u.usr_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria
+      usr_primer_nombre || ' ' || usr_primer_apellido || ' ' || to_char(d.mnc_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria
     from conf.mnc_municipio d
     left join seg.usr_usuario u on u.usr_id = d.usr_id_auditoria
-    where dvp_id = :id");
+    where dvp_id = :id order by mnc_nombre asc");
   }
   //Establece el valor del municipio y retorna el número
   function establecerMunicipio() {

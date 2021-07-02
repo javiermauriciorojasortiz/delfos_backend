@@ -7,7 +7,7 @@ use App\Http\Controllers\API\Configuracion\ParametroController;
 use App\Http\Controllers\API\Seguridad\AuditoriaController;
 use App\Http\Controllers\API\Seguridad\UsuarioController;
 use App\Http\Controllers\API\Configuracion\UPGDUIController;
-
+use App\Http\Controllers\API\Operacion\ContactoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,8 +51,9 @@ Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAu
 //----------------------------------------------------------------------------------------
 //Catalogos
 Route::post('consultarcatalogos', [CatalogoController::class, 'consultarCatalogos']);
-Route::post('obtenervaloresporcodigocatalogo', [CatalogoController::class, 'obtenerValoresporCodigoCatalogo']);
-Route::post('eliminarvalorcatalogo', [CatalogoController::class, 'eliminarValorCatalogo']);
+Route::get('obtenervaloresporcodigocatalogo', [CatalogoController::class, 'obtenerValoresporCodigoCatalogo']);
+Route::get('obtenervaloresporidcatalogo', [CatalogoController::class, 'obtenerValoresporIdCatalogo']);
+Route::get('eliminarvalorcatalogo', [CatalogoController::class, 'eliminarValorCatalogo']);
 Route::post('establecervalorcatalogo', [CatalogoController::class, 'establecerValorCatalogo']);
 //Parametros
 Route::post('consultarparametros', [ParametroController::class, 'consultarParametros']);
@@ -60,9 +61,10 @@ Route::post('establecerparametro', [ParametroController::class, 'establecerParam
 Route::get('obtenerparametroporcodigo', [ParametroController::class, 'obtenerParametroporCodigo']);
 //Divipola
 Route::post('consultardivipolas', [DivipolaController::class, 'consultarDivipolas']);
+Route::get('listardivipolas', [DivipolaController::class, 'listarDivipolas']);
 Route::post('eliminardivipola', [DivipolaController::class, 'eliminarDivipola']);
 Route::post('establecerdivipola', [DivipolaController::class, 'establecerDivipola']);
-Route::post('obtenermunicipiosporiddivipola', [DivipolaController::class, 'obtenerMunicipiosporIDDivipola']);
+Route::get('obtenermunicipiosporiddivipola', [DivipolaController::class, 'obtenerMunicipiosporIDDivipola']);
 Route::post('establecermunicipio', [DivipolaController::class, 'establecerMunicipio']);
 Route::post('eliminarmunicipio', [DivipolaController::class, 'eliminarMunicipio']);
 Route::post('obtenerzonasporidmunicipio', [DivipolaController::class, 'obtenerZonasporIDMunicipio']);
@@ -73,6 +75,11 @@ Route::post('eliminarbarrio', [DivipolaController::class, 'eliminarBarrio']);
 Route::post('establecerbarrio', [DivipolaController::class, 'establecerBarrio']);
 //EAPB
 Route::post('consultareapbs', [EAPBController::class, 'consultarEAPBs']);
+Route::post('establecereapb', [EAPBController::class, 'establecerEAPB']);
+Route::get('eliminareapb', [EAPBController::class, 'eliminarEAPB']);
 //UPGD-UI
 Route::post('consultarupgduis', [UPGDUIController::class, 'consultarUPGDUIs']);
-
+Route::post('establecerupgdui', [UPGDUIController::class, 'establecerUPGDUI']);
+Route::get('eliminarupgdui', [UPGDUIController::class, 'eliminarUPGDUI']);
+//Contacto
+Route::get('obtenercontactoporid', [ContactoController::class, 'obtenerContactoPorId']);

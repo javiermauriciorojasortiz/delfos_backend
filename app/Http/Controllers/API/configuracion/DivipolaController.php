@@ -14,6 +14,10 @@ class DivipolaController extends Controller
     $catalogo = new Divipola($request, 12);
     return $catalogo->consultarDivipolas();
   }
+  function listarDivipolas(Request $request){
+    $catalogo = new Divipola($request, 0);
+    return $catalogo->listarDivipolas();
+  }
   function eliminarDivipola(Request $request){
     $catalogo = new Divipola($request, 12);
     return $catalogo->eliminarDivipola();
