@@ -62,16 +62,16 @@ Route::get('obtenerparametroporcodigo', [ParametroController::class, 'obtenerPar
 //Divipola
 Route::post('consultardivipolas', [DivipolaController::class, 'consultarDivipolas']);
 Route::get('listardivipolas', [DivipolaController::class, 'listarDivipolas']);
-Route::post('eliminardivipola', [DivipolaController::class, 'eliminarDivipola']);
+Route::get('eliminardivipola', [DivipolaController::class, 'eliminarDivipola']);
 Route::post('establecerdivipola', [DivipolaController::class, 'establecerDivipola']);
 Route::get('obtenermunicipiosporiddivipola', [DivipolaController::class, 'obtenerMunicipiosporIDDivipola']);
 Route::post('establecermunicipio', [DivipolaController::class, 'establecerMunicipio']);
-Route::post('eliminarmunicipio', [DivipolaController::class, 'eliminarMunicipio']);
-Route::post('obtenerzonasporidmunicipio', [DivipolaController::class, 'obtenerZonasporIDMunicipio']);
+Route::get('eliminarmunicipio', [DivipolaController::class, 'eliminarMunicipio']);
+Route::get('obtenerzonasporidmunicipio', [DivipolaController::class, 'obtenerZonasporIDMunicipio']);
 Route::post('establecerzona', [DivipolaController::class, 'establecerZona']);
-Route::post('eliminarzona', [DivipolaController::class, 'eliminarZona']);
-Route::post('obtenerbarriosporidzona', [DivipolaController::class, 'obtenerBarriosporIDZona']);
-Route::post('eliminarbarrio', [DivipolaController::class, 'eliminarBarrio']);
+Route::get('eliminarzona', [DivipolaController::class, 'eliminarZona']);
+Route::get('obtenerbarriosporidzona', [DivipolaController::class, 'obtenerBarriosporIDZona']);
+Route::get('eliminarbarrio', [DivipolaController::class, 'eliminarBarrio']);
 Route::post('establecerbarrio', [DivipolaController::class, 'establecerBarrio']);
 //EAPB
 Route::post('consultareapbs', [EAPBController::class, 'consultarEAPBs']);
