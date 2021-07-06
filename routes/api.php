@@ -43,6 +43,9 @@ Route::post('obtenerusuarioporid', [UsuarioController::class, 'obtenerUsuariopor
 Route::post('establecerusuario', [UsuarioController::class, 'establecerUsuario']);
 Route::get('obtenertiposusuario', [UsuarioController::class, 'obtenerTiposUsuario']);
 Route::get('obtenerestadosusuario', [UsuarioController::class, 'obtenerEstadosUsuario']);
+Route::get('obtenerrolesusuario', [UsuarioController::class, 'obtenerRolesUsuario']);
+Route::post('insertarrolusuario', [UsuarioController::class, 'insertarRolUsuario']);
+Route::get('eliminarrolusuario', [UsuarioController::class, 'eliminarRolUsuario']);
 //Auditoría
 Route::post('consultarauditoria', [AuditoriaController::class, 'consultarAuditoria']);
 Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAuditoria']);
@@ -73,6 +76,7 @@ Route::get('eliminarzona', [DivipolaController::class, 'eliminarZona']);
 Route::get('obtenerbarriosporidzona', [DivipolaController::class, 'obtenerBarriosporIDZona']);
 Route::get('eliminarbarrio', [DivipolaController::class, 'eliminarBarrio']);
 Route::post('establecerbarrio', [DivipolaController::class, 'establecerBarrio']);
+Route::get('obtenersecretarias', [DivipolaController::class, 'obtenerSecretarias']);
 //EAPB
 Route::post('consultareapbs', [EAPBController::class, 'consultarEAPBs']);
 Route::post('establecereapb', [EAPBController::class, 'establecerEAPB']);

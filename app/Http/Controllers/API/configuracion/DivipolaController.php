@@ -30,6 +30,10 @@ class DivipolaController extends Controller
     $catalogo = new Divipola($request, 12);
     return $catalogo->obtenerMunicipiosporIDDivipola();
   }
+  function obtenerSecretarias(Request $request){
+    $catalogo = new Divipola($request, 0);
+    return $catalogo->obtenerSecretarias();
+  }
   function establecerMunicipio(Request $request){
     $catalogo = new Divipola($request, 12);
     return $catalogo->establecerMunicipio();

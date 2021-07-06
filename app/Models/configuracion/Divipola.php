@@ -71,6 +71,11 @@ class Divipola extends Core{
       WHERE mnc_id = :id", null, true, ["departamentoid"]);
     }
   }
+  //Obtener lista de municipios de secretarias
+  function obtenerSecretarias() {
+    return $this->obtenerResultset("SELECT mnc_id id, dvp_id departamentoid, mnc_nombre nombre, mnc_codigo codigo
+    from conf.mnc_municipio where mnc_ent_territorial = cast(1 as bit) order by mnc_nombre asc");
+  }
   //Eliminar municipio por id
   function eliminarMunicipio() {
     return $this->actualizarData("DELETE FROM conf.mnc_municipio where mnc_id = :id"); 
@@ -130,5 +135,5 @@ class Divipola extends Core{
       WHERE brr_id = :id", null, true);
     }
   }
-
+//#endregion
 }

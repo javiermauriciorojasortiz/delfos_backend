@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\API\Seguridad;
 
 use App\Http\Controllers\Controller;
+use App\Models\Configuracion\Parametro;
 use App\Models\Seguridad\Usuario;
+use Exception;
 use Illuminate\Http\Request;
 
 //Controlador de eventos de usuario
@@ -54,13 +56,35 @@ class UsuarioController extends Controller
     //Cambiar Clave
     public function cambiarClave(Request $request){
         $usuario = new Usuario($request, 0); 
-        $resultado = $usuario->cambiarClave();
-        if($resultado==0) {
-            $rta = array("codigo" => 1, "descripcion" => "Exitoso");
-        } else {
-            $rta = array("codigo" => 0, "descripcion" => "El cambio de clave no fue posible. ".
-                "Recuerde que su clave no puede ser igual a alguna de las " . $resultado . " anteriores.");
+        $prmGeneral = new Parametro($request, 0);
+
+        $intento = $usuario->autenticar(true);
+        $rta["codigo"] = 0;
+        //No se pudo autenticar
+        if(count($intento) == 0) {
+            $rta["descripcion"] = "Clave actual no es válida. Esta acción bloqueará a su usuario si se supera el número de intentos permitidos.";
+            return $rta;
         }
+        //Verificar complejidad clave
+        $patron = $prmGeneral->obtenerParametroporCodigo("CMCLAV")[0]->valor;
+        //throw new Exception($patron);
+        $mensaje = $prmGeneral->obtenerParametroporCodigo("EXPCLA")[0]->valor;
+        $clave = $usuario->parametros["clavenueva"];
+        if (preg_match($patron, $clave)==0) {
+            $rta["descripcion"] = "Calidad de clave insuficiente para ser aceptada. Por favor recuerde : " . $mensaje;
+            return $rta;
+        }
+
+        $resultado = $usuario->cambiarClave();
+        if($resultado==true) {
+            $rta["codigo"] = 1;
+            $rta["descripcion"] = "Exitoso";
+        } else {
+            $rta["codigo"] = 0;
+            $rta["descripcion"] = "El cambio de clave no fue posible. ".
+                "Recuerde que su clave no puede ser igual a alguna de las anteriores.";
+        }
+        return $rta;
     }
     //Obtener usuario por id
     public function obtenerUsuarioporID(Request $request){
@@ -81,5 +105,17 @@ class UsuarioController extends Controller
     public function obtenerEstadosUsuario(Request $request){
         $usuario = new Usuario($request, 0); 
         return $usuario->obtenerEstadosUsuario();
+    }
+    public function obtenerRolesUsuario(Request $request){
+        $usuario = new Usuario($request, 0); 
+        return $usuario->obtenerRolesUsuario();   
+    }
+    public function insertarRolUsuario(Request $request){
+        $usuario = new Usuario($request, 0); 
+        return $usuario->insertarRolUsuario();   
+    }
+    public function eliminarRolUsuario(Request $request){
+        $usuario = new Usuario($request, 0); 
+        return $usuario->eliminarRolUsuario();   
     }
 }

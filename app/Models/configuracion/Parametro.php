@@ -12,6 +12,7 @@ class Parametro extends Core{
   function __construct(Request $request, int $opcion) {
     parent::__construct($request, $opcion);
   }
+  
   //Consultar la lista de parámetros generales de la base de datos
   function consultarParametros() {
     return $this->obtenerResultset("SELECT prg_id id, prg_codigo codigo, prg_nombre nombre,
@@ -30,8 +31,14 @@ class Parametro extends Core{
           prg_fecha_auditoria = current_timestamp where prg_id=:id",null, true);
   }
   //Obtener un parámetro por su código()
-  function obtenerParametroporCodigo(){
+  function obtenerParametroporCodigo($codigo = null){
+    $params = $this->parametros;
+    if($codigo!= null) {
+      unset($params);
+      $params["codigo"] = $codigo;
+    } 
+
     return $this->obtenerResultset("SELECT prg_id id, prg_codigo codigo, prg_nombre nombre, prg_valor valor 
-          from conf.prg_parametro_general p where LOWER(prg_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'");  
+          from conf.prg_parametro_general p where LOWER(prg_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'", $params);  
   }
 }

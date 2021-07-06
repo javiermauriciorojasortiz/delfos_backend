@@ -2,6 +2,7 @@
 
 namespace App\Models\Seguridad;
 
+use App\Models\Configuracion\Parametro;
 use App\Models\Core;
 use Exception;
 use Illuminate\Http\Request;
@@ -17,10 +18,19 @@ class Usuario extends Core {
       parent::__construct($request, $opcion);
     }
     //Obtiene el usuario si el login es correcto
-    function autenticar(){
+    function autenticar(bool $novalidar = false){
       $params = $this->parametros;
+      if($novalidar) {//No validar el tipo de usuario
+        $params["tipousuario"] = -1; 
+        $params["clave"] = $params["claveanterior"];
+        unset($params["claveanterior"]);//Eliminar esta llave
+        unset($params["clavenueva"]);//Eliminar esta llave
+        unset($params["confirmarclave"]);//Eliminar esta llave
+        unset($params["id"]);//Eliminar esta llave
+      } 
       $params["ip"] = $this->variablesServidor["ip"];
       $params["clave"] = $this->encriptarClave($params["clave"]);
+      //throw new Exception (implode("|",$params));
       $rta = DB::select('SELECT * FROM seg.fnusr_autenticar(:tipousuario, :emailidentificacion, :clave, :ip)', $params);
       
       if(count($rta) > 0) {
@@ -34,7 +44,7 @@ class Usuario extends Core {
       $params = $this->parametros;
       $params["ip"] = $this->variablesServidor["ip"];
       $rta = DB::select('select * from seg.fnusr_autenticarportoken(:sesion, :emailidentificacion, :ip)', $params);
-      $this->usuario = $rta;
+      $this->usuario = $rta[0];
       return $rta;
     }
     //Envía correo al usuario para que se autentique
@@ -74,20 +84,21 @@ class Usuario extends Core {
     }
     //Obtener lista de usuarios
     function consultarUsuarios() {
-      $rta = $this->obtenerResultset("SELECT distinct usr_id id, u.eus_id estado, u.tid_id tipoidentificacion, u.usr_identificacion identificacion,
+      $rta = $this->obtenerResultset("SELECT distinct u.usr_id id, u.eus_id estado, u.tid_id tipoidentificacionid, u.usr_identificacion identificacion,
             u.usr_primer_nombre primer_nombre, u.usr_segundo_nombre segundo_nombre, u.usr_primer_apellido primer_apellido,
             u.usr_segundo_apellido segundo_apellido, u.usr_email email, u.usr_telefonos telefonos, u.usr_fecha_acceso fecha_acceso,
-            u.usr_fecha_activacion fecha_activacion, '' auditoria, u.usr_fecha_intento fecha_intento,
-            eus_nombre nombreestado, tid_codigo codigotipoidentificacion 
+            u.usr_fecha_activacion fecha_activacion, u.usr_fecha_intento fecha_intento, eus_nombre nombreestado, tid_codigo codigotipoidentificacion,
+            a.usr_primer_nombre || ' ' || a.usr_primer_apellido || ' ' || to_char(u.usr_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria
           FROM seg.usr_usuario u 
           inner join conf.tid_tipo_identificacion t on t.tid_id = u.tid_id
           inner join seg.eus_estado_usuario o on o.eus_id = u.eus_id 
+          left join seg.usr_usuario a on a.usr_id = u.usr_id_auditoria
           where (exists(select 1 from seg.rou_rol_usuario r where r.usr_id = u.usr_id and (r.tus_id = :tipousuario)) or :tipousuario = 0)
             and (LOWER(u.usr_primer_nombre || u.usr_primer_apellido) like  '%' || coalesce(LOWER(:nombreusuario),'') || '%')
             and (LOWER(u.usr_email) like '%' || coalesce(LOWER(:emailusuario),'') || '%')
-            and usr_fecha_creacion between coalesce(:fechainiusuario, TO_DATE('20000101', 'YYYYMMDD')) and coalesce(:fechafinusuario, TO_DATE('21000101', 'YYYYMMDD'))
+            and u.usr_fecha_creacion between coalesce(:fechainiusuario, TO_DATE('20000101', 'YYYYMMDD')) and coalesce(:fechafinusuario, TO_DATE('21000101', 'YYYYMMDD'))
             and o.eus_id = coalesce(:estadousuario, o.eus_id) 
-            limit 1000", $this->parametros);
+            limit 1000");
       return $rta;
       //$rta = DB::select('exec seg.pausr_obtenerporsesion(?)',array($params));
     }
@@ -106,26 +117,34 @@ class Usuario extends Core {
     public function eliminarUsuario(){
       $rta = 0;
       try {
-        $rta = $this->actualizarData("DELETE from seg.usr_usuario where usr_id = :id", $this->parametros);
+        $this->actualizarData("DELETE from seg.usr_usuario where usr_id = :id", $this->parametros);
+        $rta = 0;
       } catch(\Exception $ex){ //Si el usuario ya tiene referencias se inactiva
-        $rta = $this->actualizarData("UPDATE seg.usr_usuario set eus_id = 3 where usr_id = :id", $this->parametros);
+        $this->actualizarData("UPDATE seg.usr_usuario set eus_id = 3 where usr_id = :id", $this->parametros);
       }
       return $rta;
     }
     //Encripción de clave
     private function encriptarClave(string $clave) {
-      $pass = $clave . 'DELFOS';
-      $method = 'aes128';
-      return $clave;//openssl_encrypt ($clave, $method, $pass);
+      $ciphering = "AES-128-CTR";
+      $iv_size = openssl_cipher_iv_length($ciphering);
+      $options = 0;
+      $encryption_iv = '1234567891011121';
+      $encryption_key = "DelfosApp";
+      $encryption = openssl_encrypt($clave, $ciphering, $encryption_key, $options, $encryption_iv);
+      return $encryption;
     }
     //Cambiar Clave. Retorna 0 si es exitosa o el número de claves no repetidas
     public function cambiarClave(){
       $params = $this->parametros;
       $params["claveanterior"] = $this->encriptarClave($params["claveanterior"]);
       $params["clavenueva"] = $this->encriptarClave($params["clavenueva"]);
-      $rta = $this->obtenerResultset("SELECT * FROM seg.fnusr_actualizarclave(:id,:claveanterior,:clavenueva)", $params);
+      //throw new Exception(implode("|", $params));
+      $rta = $this->obtenerResultset("SELECT * FROM seg.fnusr_actualizarclave(:id,:claveanterior,:clavenueva, :usuario)", 
+              $params, true, ["confirmarclave","emailidentificacion"]);
       return $rta[0]->fnusr_actualizarclave;
     }
+
     //Obtener usuario por id
     public function obtenerUsuarioporID(){
         $rta = $this->obtenerResultset("SELECT u.usr_id  id, u.eus_id estado, u.tid_id tipoidentificacion,
@@ -141,15 +160,15 @@ class Usuario extends Core {
 
       if($this->parametros["id"]== 0) {//Insertar
 
-        return $this->actualizarData("INSERT INTO seg.usr_usuario(usr_id, eus_id, tid_id, usr_identificacion, usr_clave, 
+        return $this->actualizarData("INSERT INTO seg.usr_usuario(usr_id, eus_id, tid_id, usr_identificacion, 
             usr_primer_nombre, usr_segundo_nombre, usr_primer_apellido, usr_segundo_apellido, usr_email, usr_telefonos, 
             usr_fecha_auditoria, usr_id_auditoria, usr_intentos, usr_fecha_creacion)
-          VALUES (nextval('seg.sequsr'), 0, :tipoidentificacion, :identificacion, :clave, 
-          :primer_nombre, :segundo_nombre, :primer_apellido, :segundo_apellido, :email: string, :telefonos,
-            current_timestamp, :usuario, 0, current_timestamp)", null, true, ["estado","auditoria","id"]);
+          VALUES (nextval('seg.sequsr'), 0, :tipoidentificacionid, :identificacion, 
+          :primer_nombre, :segundo_nombre, :primer_apellido, :segundo_apellido, :email, :telefonos,
+            current_timestamp, :usuario, 0, current_timestamp)", null, true, ["estado","auditoria","id", "clave"]);
       } else { //Actualizar
         
-        return $this->actualizarData("UPDATE seg.usr_usuario SET eus_id = :estado, tid_id = :tipoidentificacion,
+        return $this->actualizarData("UPDATE seg.usr_usuario SET eus_id = :estado, tid_id = :tipoidentificacionid,
             usr_identificacion = :identificacion, usr_primer_nombre = :primer_nombre, usr_segundo_nombre = :segundo_nombre, 
             usr_primer_apellido = :primer_apellido, usr_segundo_apellido = :segundo_apellido, usr_email = :email, 
             usr_telefonos = :telefonos, usr_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario, 
@@ -159,10 +178,37 @@ class Usuario extends Core {
     }
     //Obtiene la lista de roles posibles de la base de datos
     public function obtenerTiposUsuario() {
-      return $this->obtenerResultset("SELECT tus_id id, tus_nombre nombre, cat_tipo_entidad tipoentidad FROM seg.tus_tipo_usuario");   
+      return $this->obtenerResultset("SELECT tus_id id, tus_nombre nombre, vlc_nombre nombretipoentidad, 
+      t.vlc_id_tipo_entidad tipoentidadid, vlc_codigo codigotipoentidad
+      FROM seg.tus_tipo_usuario t inner join conf.vlc_valor_catalogo v on v.vlc_id = t.vlc_id_tipo_entidad");   
     }
     //Obtiene la lista de estados del usuario
     public function obtenerEstadosUsuario(){
       return $this->obtenerResultset("SELECT eus_id id, eus_nombre nombre, eus_activo activo FROM seg.eus_estado_usuario");   
+    }
+    //Obtiene la lista de roles asociados
+    public function obtenerRolesUsuario(){
+      return $this->obtenerResultset("SELECT  r.usr_id usuarioid, r.tus_id tipousuarioid, tus_nombre nombretipousuario,
+      t.vlc_id_tipo_entidad tipoentidadid, vlc_nombre nombretipoentidad, r.rou_entidadid entidadid,
+      coalesce(eap_nombre, upu_nombre, mnc_nombre, '(No requerida)') nombreentidad,
+      u.usr_primer_nombre || ' ' || u.usr_primer_apellido || ' ' || to_char(r.rou_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria 
+      from seg.rou_rol_usuario r
+      inner join seg.tus_tipo_usuario t on t.tus_id = r.tus_id
+      inner join conf.vlc_valor_catalogo v on v.vlc_id = t.vlc_id_tipo_entidad
+      left join seg.usr_usuario u on u.usr_id = r.usr_id_auditoria 
+      left join conf.eap_eapb e on e.eap_id = r.rou_entidadid and v.vlc_codigo = 'EAPB'
+      left join conf.upu_upgd_ui i on i.upu_id = r.rou_entidadid and v.vlc_codigo = 'UPGD'
+      left join conf.mnc_municipio m on m.mnc_id = r.rou_entidadid and v.vlc_codigo = 'SECR'
+      where r.usr_id = :id");
+    }
+    //Insertar roles de un usuario
+    public function insertarRolUsuario(){
+      return $this->actualizarData("INSERT INTO seg.rou_rol_usuario (usr_id, tus_id, rou_entidadid, usr_id_auditoria, rou_fecha_auditoria)
+      values(:usuarioid, :tipousuarioid, :entidadrol, :usuario, current_timestamp)", null, true);
+    }
+    //Eliminar roles de un usuario
+    public function eliminarRolUsuario(){
+      return $this->actualizarData("DELETE FROM seg.rou_rol_usuario where usr_id = :usuarioid 
+          and tus_id = :tipousuarioid and rou_entidadid = :entidadid");
     }
 }
