@@ -51,7 +51,9 @@ class UsuarioController extends Controller
     //Eliminar usuario
     public function eliminarUsuario(Request $request){
         $usuario = new Usuario($request, 25); 
-        return $usuario->eliminarUsuario();
+        $rta["codigo"] = $usuario->eliminarUsuario();
+        $rta["descripcion"] = "Falla en la eliminación";
+        return $rta;
     }
     //Cambiar Clave
     public function cambiarClave(Request $request){
@@ -91,6 +93,16 @@ class UsuarioController extends Controller
         $usuario = new Usuario($request, 0); 
         return $usuario->obtenerUsuarioporID();   
     }
+    //Obtener usuario por id
+    public function obtenerNotificador(Request $request){
+        $usuario = new Usuario($request, 0); 
+        return json_encode($usuario->obtenerNotificador());    
+    }
+    //Obtener usuario por id
+    public function obtenerResponsable(Request $request){
+        $usuario = new Usuario($request, 0); 
+        return json_encode($usuario->obtenerResponsable());    
+    }
     //Establece el usuario y retorna el número
     public function establecerUsuario(Request $request){
         $usuario = new Usuario($request, 0); 
@@ -106,16 +118,57 @@ class UsuarioController extends Controller
         $usuario = new Usuario($request, 0); 
         return $usuario->obtenerEstadosUsuario();
     }
+    //Obtener lista de roles asociados al usuario
     public function obtenerRolesUsuario(Request $request){
         $usuario = new Usuario($request, 0); 
         return $usuario->obtenerRolesUsuario();   
     }
+    //Insertar nuevo rol para el usuario
     public function insertarRolUsuario(Request $request){
         $usuario = new Usuario($request, 0); 
         return $usuario->insertarRolUsuario();   
     }
+    //Eliminar un rol del usuario
     public function eliminarRolUsuario(Request $request){
         $usuario = new Usuario($request, 0); 
         return $usuario->eliminarRolUsuario();   
+    }
+    //Parametros para establecer el usuario notificador/responsable
+    private function paramsUsuario($usuario) {
+        return array("tipoidentificacionid" => $usuario->parametros["tipoidentificacionid"], 
+        "identificacion" => $usuario->parametros["identificacion"], 
+        "primer_nombre" => $usuario->parametros["primer_nombre"], 
+        "segundo_nombre" => $usuario->parametros["segundo_nombre"], 
+        "primer_apellido" => $usuario->parametros["primer_apellido"], 
+        "segundo_apellido" => $usuario->parametros["segundo_apellido"], 
+        "email" => $usuario->parametros["email"], 
+        "telefonos" => $usuario->parametros["telefonos"],
+        "estado" => 1,
+        "id" => $usuario->parametros["id"]);
+    }
+    //Establece la información de un usuario notificador
+    public function establecerNotificador(Request $request){
+        $usuario = new Usuario($request, 0);
+        $nuevo = ($usuario->parametros["id"] == 0);
+        //Obtener los parámetros de usuario
+        $params = $this->paramsUsuario($usuario);
+
+        $usuario->iniciarTransaccion();        
+        $id = $usuario->establecerUsuario($params);
+        $id = $usuario->establecerNotificador($id, $nuevo);
+        $usuario->serializarTransaccion();
+        return $id;
+    }
+    //Establece la información de un usuario notificador
+    public function establecerResponsable(Request $request){
+        $usuario = new Usuario($request, 0); 
+        $nuevo = ($usuario->parametros["id"] == 0);
+        //Obtener los parámetros de usuario
+        $params = $this->paramsUsuario($usuario);
+        $usuario->iniciarTransaccion();
+        $id = $usuario->establecerUsuario($params);
+        $usuario->establecerResponsable($id, $nuevo);   
+        $usuario->serializarTransaccion();
+        return $id;
     }
 }

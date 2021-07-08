@@ -30,7 +30,7 @@ class Usuario extends Core {
       } 
       $params["ip"] = $this->variablesServidor["ip"];
       $params["clave"] = $this->encriptarClave($params["clave"]);
-      //throw new Exception (implode("|",$params));
+      //throw new Exception ($params["clave"]);//implode("|",$params));
       $rta = DB::select('SELECT * FROM seg.fnusr_autenticar(:tipousuario, :emailidentificacion, :clave, :ip)', $params);
       
       if(count($rta) > 0) {
@@ -118,8 +118,9 @@ class Usuario extends Core {
       $rta = 0;
       try {
         $this->actualizarData("DELETE from seg.usr_usuario where usr_id = :id", $this->parametros);
-        $rta = 0;
+        $rta = 1;
       } catch(\Exception $ex){ //Si el usuario ya tiene referencias se inactiva
+        $rta = 2;
         $this->actualizarData("UPDATE seg.usr_usuario set eus_id = 3 where usr_id = :id", $this->parametros);
       }
       return $rta;
@@ -156,24 +157,26 @@ class Usuario extends Core {
         where u.usr_id = :id");
     }
     //Establece el usuario y retorna el número
-    public function establecerUsuario(){
+    public function establecerUsuario(array $params = null){
 
       if($this->parametros["id"]== 0) {//Insertar
 
-        return $this->actualizarData("INSERT INTO seg.usr_usuario(usr_id, eus_id, tid_id, usr_identificacion, 
+        return $this->obtenerResultset("INSERT INTO seg.usr_usuario(usr_id, eus_id, tid_id, usr_identificacion, 
             usr_primer_nombre, usr_segundo_nombre, usr_primer_apellido, usr_segundo_apellido, usr_email, usr_telefonos, 
             usr_fecha_auditoria, usr_id_auditoria, usr_intentos, usr_fecha_creacion)
           VALUES (nextval('seg.sequsr'), 0, :tipoidentificacionid, :identificacion, 
           :primer_nombre, :segundo_nombre, :primer_apellido, :segundo_apellido, :email, :telefonos,
-            current_timestamp, :usuario, 0, current_timestamp)", null, true, ["estado","auditoria","id", "clave"]);
+            current_timestamp, :usuario, 0, current_timestamp) RETURNING usr_id", 
+            $params, true, ["estado","auditoria","id", "clave"])[0]->usr_id;
       } else { //Actualizar
-        
-        return $this->actualizarData("UPDATE seg.usr_usuario SET eus_id = :estado, tid_id = :tipoidentificacionid,
+        //throw new Exception(implode("|", array_keys($params)));
+         $this->actualizarData("UPDATE seg.usr_usuario SET eus_id = :estado, tid_id = :tipoidentificacionid,
             usr_identificacion = :identificacion, usr_primer_nombre = :primer_nombre, usr_segundo_nombre = :segundo_nombre, 
             usr_primer_apellido = :primer_apellido, usr_segundo_apellido = :segundo_apellido, usr_email = :email, 
             usr_telefonos = :telefonos, usr_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario, 
             usr_intentos = 0, usr_fecha_intento = null
-            WHERE usr_id =  :id", null, true, ["clave","auditoria"]);
+            WHERE usr_id =  :id", $params, true, ["clave","auditoria"]);
+         return $this->parametros["id"];
       }
     }
     //Obtiene la lista de roles posibles de la base de datos
@@ -211,4 +214,71 @@ class Usuario extends Core {
       return $this->actualizarData("DELETE FROM seg.rou_rol_usuario where usr_id = :usuarioid 
           and tus_id = :tipousuarioid and rou_entidadid = :entidadid");
     }
+    //Inserta o actualiza el notificador
+    public function establecerNotificador(int $id, bool $nuevo){
+      $params = array();
+      $params["id"] = $id;
+      $params["pregrado"] = $this->parametros["pregrado"];
+      $params["registro_medico"] = $this->parametros["registro_medico"];
+      $params["autoriza_email"] = $this->parametros["autoriza_email"];
+      $params["autoriza_sms"] = $this->parametros["autoriza_sms"];
+      $params["especialidadid"] = $this->parametros["especialidadid"];
+      if($nuevo) {//Insertar
+        //throw new Exception(implode("|", $params));
+
+        return $this->actualizarData("INSERT INTO oper.ntf_notificador(ntf_id, ntf_pregrado, ntf_registro_medico, ntf_autoriza_email, 
+          ntf_autoriza_sms, ntf_fecha_auditoria, usr_id_auditoria, vlc_id_especialidad)
+          VALUES (:id, :pregrado, :registro_medico, :autoriza_email, :autoriza_sms, current_timestamp, :usuario, :especialidadid)", 
+          $params, true);
+      } else { //Actualizar
+        
+        return $this->actualizarData("UPDATE oper.ntf_notificador SET ntf_pregrado = :pregrado, ntf_registro_medico = :registro_medico, 
+          ntf_autoriza_email = :autoriza_email, ntf_autoriza_sms = :autoriza_sms, ntf_fecha_auditoria = current_timestamp, 
+          usr_id_auditoria= :usuario, vlc_id_especialidad = :especialidadid WHERE ntf_id = :id", 
+          $params, true);
+      }
+    }
+    //Inserta o actualiza al responsable
+    public function establecerResponsable(int $id, bool $nuevo){
+      $params = array();
+      $params["id"] = $id;
+      $params["autoriza_email"] = $this->parametros["autoriza_email"];
+      $params["autoriza_sms"] = $this->parametros["autoriza_sms"];
+      if($nuevo) {//Insertar
+
+        return $this->actualizarData("INSERT INTO oper.rps_responsable(rps_id, rps_autoriza_email, rps_autoriza_sms,  
+            rps_fecha_auditoria, usr_id_auditoria)
+            VALUES (:id, :autoriza_email, :autoriza_sms, current_timestamp, :usuario)", $params, true);
+      } else { //Actualizar
+        
+        return $this->actualizarData("UPDATE oper.rps_responsable SET rps_autoriza_email = :autoriza_email, 
+            rps_autoriza_sms = :autoriza_sms, rps_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario
+            WHERE rps_id = :id", $params, true);
+      }
+    }
+  //Obtener usuario por id
+  public function obtenerNotificador(){
+      return $this->obtenerResultset("SELECT distinct u.usr_id id, u.eus_id estado, u.tid_id tipoidentificacionid, u.usr_identificacion identificacion,
+        u.usr_primer_nombre primer_nombre, u.usr_segundo_nombre segundo_nombre, u.usr_primer_apellido primer_apellido,
+        u.usr_segundo_apellido segundo_apellido, u.usr_email email, u.usr_telefonos telefonos, u.usr_fecha_acceso fecha_acceso,
+        u.usr_fecha_activacion fecha_activacion, u.usr_fecha_intento fecha_intento,
+        a.usr_primer_nombre || ' ' || a.usr_primer_apellido || ' ' || to_char(n.ntf_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria,
+        ntf_pregrado pregrado, ntf_registro_medico registro_medico, ntf_autoriza_email autoriza_email, 
+        ntf_autoriza_sms autoriza_sms, vlc_id_especialidad especialidadid
+        from seg.usr_usuario u left join oper.ntf_notificador n on n.ntf_id = u.usr_id
+        left join seg.usr_usuario a on a.usr_id = n.usr_id_auditoria 
+        where u.usr_id = :id")[0];
+  }
+  //Obtener usuario por id
+  public function obtenerResponsable(){
+    return $this->obtenerResultset("SELECT distinct u.usr_id id, u.eus_id estado, u.tid_id tipoidentificacionid, u.usr_identificacion identificacion,
+      u.usr_primer_nombre primer_nombre, u.usr_segundo_nombre segundo_nombre, u.usr_primer_apellido primer_apellido,
+      u.usr_segundo_apellido segundo_apellido, u.usr_email email, u.usr_telefonos telefonos, u.usr_fecha_acceso fecha_acceso,
+      u.usr_fecha_activacion fecha_activacion, u.usr_fecha_intento fecha_intento,
+      a.usr_primer_nombre || ' ' || a.usr_primer_apellido || ' ' || to_char(n.rps_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria,
+      rps_autoriza_email autoriza_email, rps_autoriza_sms autoriza_sms
+      from seg.usr_usuario u left join oper.rps_responsable n on n.rps_id = u.usr_id
+      left join seg.usr_usuario a on a.usr_id = n.usr_id_auditoria
+      where u.usr_id = :id")[0];
+}
 }

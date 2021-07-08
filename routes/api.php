@@ -46,6 +46,10 @@ Route::get('obtenerestadosusuario', [UsuarioController::class, 'obtenerEstadosUs
 Route::get('obtenerrolesusuario', [UsuarioController::class, 'obtenerRolesUsuario']);
 Route::post('insertarrolusuario', [UsuarioController::class, 'insertarRolUsuario']);
 Route::get('eliminarrolusuario', [UsuarioController::class, 'eliminarRolUsuario']);
+Route::post('establecernotificador', [UsuarioController::class, 'establecerNotificador']);
+Route::post('establecerresponsable', [UsuarioController::class, 'establecerResponsable']);
+Route::get('obtenernotificador', [UsuarioController::class, 'obtenerNotificador']);
+Route::get('obtenerresponsable', [UsuarioController::class, 'obtenerResponsable']);
 //Auditoría
 Route::post('consultarauditoria', [AuditoriaController::class, 'consultarAuditoria']);
 Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAuditoria']);
