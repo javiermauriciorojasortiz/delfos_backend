@@ -68,7 +68,7 @@ class Core {
         $rta = DB::select("select seg.fnusr_validarsesion(:sesion, :ip, :opcion)", $params);
         Core::$usuarioID = $rta[0]->fnusr_validarsesion;
         if(Core::$usuarioID == 0) 
-            throw new Exception("Sesión no activa. Por favor autentíquese nuevamente");
+            throw new Exception("Sesión no activa o con IP diferente. Por favor autentíquese nuevamente o inicie nuevamente el registro");
     }
     //Insertar auditoria
     public function insertarAuditoria(int $usuarioid, int $tipoAuditoria, string $descripcion, bool $exitoso, string $operacion, string $observacion = null) : void {
@@ -91,8 +91,7 @@ class Core {
              unset($params[$campo]);
            }
         }
-
-        return DB::select($consulta, $params);
+        if(Core::$usuarioID != 0) return DB::select($consulta, $params);
     }
     //Ejecutar consulta sin retorno
     public function actualizarData(string $consulta, array $params = null, bool $addUsuario = false, array $excluir = null) : int {
@@ -106,7 +105,7 @@ class Core {
               unset($params[$campo]);
             }
          }
-         return DB::update($consulta, $params);    
+         if(Core::$usuarioID != 0) return DB::update($consulta, $params);    
     }
     //Inicia transacciones
     public function iniciarTransaccion(){

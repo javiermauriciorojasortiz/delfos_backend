@@ -12,7 +12,7 @@
     iniciar su participaci&oacute;n como nuevo integrante de nuestra familia.</p>
 <center>
     <div style="padding: 15px; display: block; max-width: 200px; border-radius: 15px; border: 1px solid #5A208C; background-color: #5a208c; color: white;">
-        <a style="color: white; font-size: 15px; font-weight: 500; font-family: Arial, sans-serif; text-decoration: none;" href='{{$correo["servidor"]}}registro-{{$correo["tipo"]}}/{{$correo["token"]}}'>Inicie su registro ac&aacute;</a></div>
+        <a style="color: white; font-size: 15px; font-weight: 500; font-family: Arial, sans-serif; text-decoration: none;" href='{{$correo["servidor"]}}registro-usuario/{{$correo["token"]}}'>Inicie su registro ac&aacute;</a></div>
     <p>En caso de alg&uacute;n inconveniente, copie el siguiente link en una ventana del navegador para acceder al registro<br /> 
     <a target="_blank" style="font-size:smaller;color:#5A208C" href='{{$correo["servidor"]}}registro-{{$correo["tipo"]}}/{{$correo["token"]}}'>
     {{$correo["servidor"]}}registro-{{$correo["tipo"]}}/{{$correo["token"]}}

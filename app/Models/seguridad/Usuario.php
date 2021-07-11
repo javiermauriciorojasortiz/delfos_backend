@@ -58,17 +58,16 @@ class Usuario extends Core {
                     "ip" => $this->parametros["ip"]);  
       $data = null;
       if($this->parametros["metodoautenticacion"] == 1 && ($tipousuario == 1 || $tipousuario == 2)) {//usuario nuevo solo puede ser médico o responsable
-        $rta = DB::select('select seg.fnsst_iniciar(:emailidentificacion, :tipo,  :ip)',$sqlparams);
-        if($rta[0]->fnsst_iniciar == "ESUSUARIO") 
+        $rta = DB::select('SELECT * FROM seg.fnsst_iniciar(:emailidentificacion, :tipo,  :ip)',$sqlparams);
+        if($rta[0]->sesion == "ESUSUARIO") 
           throw new Exception("El correo pertenece a un usuario registrado. Por favor, contactese con Delfos o seleccione la opción adecuada si se le olvidó la clave");
-        if($rta[0]->fnsst_iniciar == "")
-          throw new Exception("Se ha intentado generar un nuevo correo desde otra IP. Por seguridad, debe esperar al menos una hora para volver a intentarlo");
-        if($rta[0]->fnsst_iniciar == "5MINUTOS")
+        if($rta[0]->sesion == "")
+          throw new Exception("Se ha intentado generar un nuevo correo desde otra IP (Identificación de red). Por seguridad, debe esperar al menos una hora para volver a intentarlo");
+        if($rta[0]->sesion == "5MINUTOS")
           throw new Exception("Por favor, si no ha recibido el correo revise en su bandeja de spam. Si no lo encuentra, por seguridad, se requiere que espere 5 minutos para volver a intentarlo");
         $data = $rta[0]->minutos;
         $mensaje["servidor"] = $rta[0]->servidor;
-        $mensaje["tipo"] = ($tipousuario == 1?"notificador":"responsable");
-        $mensaje["token"] = $rta[0]->token;
+        $mensaje["token"] = $rta[0]->sesion;
         Mail::to($dato)->send(new msgUsuario($mensaje, "Registro Delfos"));
       } else if ($this->parametros["metodoautenticacion"] == 2) { //Usuario olvidó clave enviar clave provisional
         $rta = DB::select('select * from seg.fnusr_generarclavealeatoria(:emailidentificacion, :tipo,  :ip)',$sqlparams);
@@ -158,7 +157,6 @@ class Usuario extends Core {
       }
       return $rta[0]->fnusr_actualizarclave;
     }
-
     //Obtener usuario por id
     public function obtenerUsuarioporID(){
         $rta = $this->obtenerResultset("SELECT u.usr_id  id, u.eus_id estado, u.tid_id tipoidentificacion,
@@ -240,4 +238,10 @@ class Usuario extends Core {
       $this->insertarAuditoria(Core::$usuarioID,5, $observacion, true, "E", ""); //Existe el usuario
       return $rta;
     }
+    //Funciónes de sesión temporal ---------------------------------------------------------------------
+    public function autenticarPorSesionTemporal(){
+      $this->validarSesion();
+      return (- CORE::$usuarioID);
+    }
+    //Fin de funciónes de sesión temporal --------------------------------------------------------------  
 }
