@@ -30,7 +30,8 @@ class Auditoria extends Core {
                         and aud_fecha >=coalesce(:fechaini, TO_DATE('2000-01-01', 'YYYY-MM-DD')) 
                         and aud_fecha <= coalesce(:fechafin, TO_DATE('2100-01-01', 'YYYY-MM-DD'))
                         Limit 1000", $this->parametros);
-    //$rta[0]->observacion = serialize($params);
+    $observacion = "Consulta General de Auditoría";
+    $this->insertarAuditoria(Core::$usuarioID,8, $observacion, true, "C", ""); //Existe el usuario
     return $rta;
   }
   //Obtener tipos de auditoría

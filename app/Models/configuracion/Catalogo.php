@@ -14,11 +14,14 @@ class Catalogo extends Core{
   }
   //Consultar la lista de catálogos
   function consultarCatalogos() {
-   return $this->obtenerResultset("SELECT cat_id id, cat_codigo codigo, cat_nombre nombre, cat_descripcion descripcion,
+    $rta =  $this->obtenerResultset("SELECT cat_id id, cat_codigo codigo, cat_nombre nombre, cat_descripcion descripcion,
              cat_id_padre idpadre, cat_editable editable
             FROM conf.cat_catalogo c
             where LOWER(cat_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'
             and LOWER(cat_nombre) like '%' || LOWER(coalesce(:nombre,'')) || '%'");
+    $observacion = "Consultar Catalogos";
+    $this->insertarAuditoria(Core::$usuarioID,12, $observacion, true, "C", ""); //Existe el usuario
+    return $rta;
   }
   //Obtener Valores catálogo por código
   function obtenerValoresporCodigoCatalogo(){
@@ -40,19 +43,30 @@ class Catalogo extends Core{
   }
   //Elimina el valor de un catálogo
   function eliminarValorCatalogo() {
-    return $this->actualizarData("DELETE FROM conf.vlc_valor_catalogo where vlc_id = :id"); 
+    $lista = $this->obtenerResultset("DELETE FROM conf.vlc_valor_catalogo where vlc_id = :id RETURNING vlc_codigo, vlc_nombre"); 
+    $rta = 1;
+    $observacion = "CATALOGO ID : " . $this->parametros["id"] . ". codigo: " . $lista[0]->vlc_codigo . ". nombre: " . $lista[0]->vlc_nombre;
+    $this->insertarAuditoria(Core::$usuarioID, 12, $observacion, true, "E", ""); //Existe el usuario
+    return $rta;
   }
   //Establece el valor del catalogo y retorna el número
   function establecerValorCatalogo(){
-
+    $rta = null;
     if($this->parametros["id"] == 0){
-      return $this->actualizarData("INSERT INTO conf.vlc_valor_catalogo ( vlc_id, cat_id, vlc_codigo, vlc_nombre, 
-        vlc_activo, vlc_fecha_auditoria, usr_id_auditoria) VALUES (nextval('conf.seqvlc'), :catalogoid, :codigo, :nombre, 
-              :activo, current_timestamp, :usuario)", null, true, ["id"]);
-    } else {
-      return $this->actualizarData("UPDATE conf.vlc_valor_catalogo SET vlc_codigo =:codigo, 
-      vlc_nombre = :nombre, vlc_activo = :activo, vlc_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario
-      WHERE vlc_id = :id", null, true, ["catalogoid"]);
+      $rta = $this->obtenerResultset("INSERT INTO conf.vlc_valor_catalogo ( vlc_id, cat_id, vlc_codigo, vlc_nombre, 
+            vlc_activo, vlc_fecha_auditoria, usr_id_auditoria) VALUES (nextval('conf.seqvlc'), :catalogoid, :codigo, :nombre, 
+            :activo, current_timestamp, :usuario) RETURNING vlc_id", null, true, ["id"]);
+        $observacion = "CATALOGO ID:" . $this->parametros["id"] . ". Valor Catálogo ID: " . $rta[0]->vlc_id . ". Codigo: " . $this->parametros["codigo"] 
+              . ". Nombre: " . $this->parametros["nombre"];
+        $this->insertarAuditoria(Core::$usuarioID, 12, $observacion, true, "I", ""); //Existe el usuario
+      } else {
+      $rta = $this->actualizarData("UPDATE conf.vlc_valor_catalogo SET vlc_codigo =:codigo, 
+            vlc_nombre = :nombre, vlc_activo = :activo, vlc_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario
+            WHERE vlc_id = :id", null, true, ["catalogoid"]);
+      $observacion = "CATALOGO ID:" . $this->parametros["catalogoid"] . ". Valor Catálogo ID: " . $this->parametros["id"] 
+            . ". Codigo: " . $this->parametros["codigo"] . ". Nombre: " . $this->parametros["nombre"];
+      $this->insertarAuditoria(Core::$usuarioID, 12, $observacion, true, "I", ""); //Existe el usuario
     }
+    return $rta;
   }
 }

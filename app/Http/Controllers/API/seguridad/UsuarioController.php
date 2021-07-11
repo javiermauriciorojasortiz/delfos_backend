@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API\Seguridad;
 
 use App\Http\Controllers\Controller;
 use App\Models\Configuracion\Parametro;
+use App\Models\Seguridad\Notificador;
+use App\Models\Seguridad\Responsable;
 use App\Models\Seguridad\Usuario;
 use Exception;
 use Illuminate\Http\Request;
@@ -95,18 +97,21 @@ class UsuarioController extends Controller
     }
     //Obtener usuario por id
     public function obtenerNotificador(Request $request){
-        $usuario = new Usuario($request, 0); 
-        return json_encode($usuario->obtenerNotificador());    
+        $notificador = new Notificador($request, 0); 
+        return json_encode($notificador->obtenerNotificador());    
     }
     //Obtener usuario por id
     public function obtenerResponsable(Request $request){
-        $usuario = new Usuario($request, 0); 
-        return json_encode($usuario->obtenerResponsable());    
+        $responsable = new Responsable($request, 0); 
+        return json_encode($responsable->obtenerResponsable());    
     }
     //Establece el usuario y retorna el número
     public function establecerUsuario(Request $request){
         $usuario = new Usuario($request, 0); 
-        return $usuario->establecerUsuario();   
+        $usuario->iniciarTransaccion();
+        $rta = $usuario->establecerUsuario();   
+        $usuario->serializarTransaccion();
+        return $rta;
     }
     //Obtiene la lista de roles posibles de la base de datos
     public function obtenerTiposUsuario(Request $request) {
@@ -149,25 +154,27 @@ class UsuarioController extends Controller
     //Establece la información de un usuario notificador
     public function establecerNotificador(Request $request){
         $usuario = new Usuario($request, 0);
+        $notificador = new Notificador($request, 0);
         $nuevo = ($usuario->parametros["id"] == 0);
         //Obtener los parámetros de usuario
         $params = $this->paramsUsuario($usuario);
 
         $usuario->iniciarTransaccion();        
         $id = $usuario->establecerUsuario($params);
-        $id = $usuario->establecerNotificador($id, $nuevo);
+        $id = $notificador->establecerNotificador($id, $nuevo);
         $usuario->serializarTransaccion();
         return $id;
     }
     //Establece la información de un usuario notificador
     public function establecerResponsable(Request $request){
         $usuario = new Usuario($request, 0); 
+        $responsable = new Responsable($request, 0);
         $nuevo = ($usuario->parametros["id"] == 0);
         //Obtener los parámetros de usuario
         $params = $this->paramsUsuario($usuario);
         $usuario->iniciarTransaccion();
         $id = $usuario->establecerUsuario($params);
-        $usuario->establecerResponsable($id, $nuevo);   
+        $responsable->establecerResponsable($id, $nuevo);   
         $usuario->serializarTransaccion();
         return $id;
     }
