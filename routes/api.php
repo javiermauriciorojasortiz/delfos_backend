@@ -50,6 +50,7 @@ Route::post('establecernotificador', [UsuarioController::class, 'establecerNotif
 Route::post('establecerresponsable', [UsuarioController::class, 'establecerResponsable']);
 Route::get('obtenernotificador', [UsuarioController::class, 'obtenerNotificador']);
 Route::get('obtenerresponsable', [UsuarioController::class, 'obtenerResponsable']);
+Route::get('autenticarporsesiontemporal', [UsuarioController::class, 'autenticarPorSesionTemporal']);
 //Auditoría
 Route::post('consultarauditoria', [AuditoriaController::class, 'consultarAuditoria']);
 Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAuditoria']);

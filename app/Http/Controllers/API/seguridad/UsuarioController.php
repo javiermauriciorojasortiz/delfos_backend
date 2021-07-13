@@ -155,27 +155,70 @@ class UsuarioController extends Controller
     public function establecerNotificador(Request $request){
         $usuario = new Usuario($request, 0);
         $notificador = new Notificador($request, 0);
-        $nuevo = ($usuario->parametros["id"] == 0);
-        //Obtener los parámetros de usuario
-        $params = $this->paramsUsuario($usuario);
+        try {
+            $data = null;
+            $nuevo = ($usuario->parametros["id"] <= 0);
+            //Obtener los parámetros de usuario
+            $params = $this->paramsUsuario($usuario);
+            //Verifica si es una operación de registro
+            $esregistro = ($params["id"]==null);
+            $usuario->iniciarTransaccion();
+            //Establece al usuario     
+            $id = $usuario->establecerUsuario($params);
+            //Se inserta rol de médico
+            $usuario->insertarRolUsuario(array("usuarioid"=> $id,"tipousuarioid"=> 1, "entidadrol"=> 0));
+            //Insertar notificador
+            $notificador->establecerNotificador($id, $nuevo);
+            //Se verifica si está en registro
+            if($esregistro) {
+                $params = array("emailidentificacion"=> $params["email"], 
+                                "tipousuario"=> 1,
+                                "metodoautenticacion"=> 2);
+                $data = $usuario->enviarCorreo($params);
+            }
 
-        $usuario->iniciarTransaccion();        
-        $id = $usuario->establecerUsuario($params);
-        $id = $notificador->establecerNotificador($id, $nuevo);
-        $usuario->serializarTransaccion();
-        return $id;
+            //TODO: Verificar funcionamiento
+            $usuario->serializarTransaccion();
+            return array("codigo" => 1, "descripcion" => "Exitoso", "data"=> $data);
+        } catch(Exception $e) {
+            return array("codigo" => 0, "descripcion" => $e->getMessage());
+        }
     }
     //Establece la información de un usuario notificador
     public function establecerResponsable(Request $request){
-        $usuario = new Usuario($request, 0); 
-        $responsable = new Responsable($request, 0);
-        $nuevo = ($usuario->parametros["id"] == 0);
-        //Obtener los parámetros de usuario
-        $params = $this->paramsUsuario($usuario);
-        $usuario->iniciarTransaccion();
-        $id = $usuario->establecerUsuario($params);
-        $responsable->establecerResponsable($id, $nuevo);   
-        $usuario->serializarTransaccion();
-        return $id;
+        $usuario = new Usuario($request, 0);
+        $notificador = new Responsable($request, 0);
+        try {
+            $data = null;
+            $nuevo = ($usuario->parametros["id"] <= 0);
+            //Obtener los parámetros de usuario
+            $params = $this->paramsUsuario($usuario);
+            //Verifica si es una operación de registro
+            $esregistro = ($params["id"]==null);
+            $usuario->iniciarTransaccion();
+            //Establece al usuario     
+            $id = $usuario->establecerUsuario($params);
+            //Se inserta rol de médico
+            $usuario->insertarRolUsuario(array("usuarioid"=> $id,"tipousuarioid"=> 2, "entidadrol"=> 0));
+            //Se establece el responsable
+            $notificador->establecerResponsable($id, $nuevo);
+            //Se verifica si está en registro
+            if($esregistro) {
+                $params = array("emailidentificacion"=> $params["email"], 
+                                "tipousuario"=> 1,
+                                "metodoautenticacion"=> 2);
+                $data = $usuario->enviarCorreo($params);
+            }
+            //TODO: Verificar funcionamiento
+            $usuario->serializarTransaccion();
+            return array("codigo" => 1, "descripcion" => "Exitoso", "data"=> $data);
+        } catch(Exception $e) {
+            return array("codigo" => 0, "descripcion" => $e->getMessage());
+        }
+    }
+    //Autenticar al usuario por sesión temporal
+    public function autenticarPorSesionTemporal(Request $request){
+        $usuario = new Usuario($request, -12345); 
+        return $usuario->autenticarPorSesionTemporal();
     }
 }

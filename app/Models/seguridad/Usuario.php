@@ -38,7 +38,8 @@ class Usuario extends Core {
       if(count($rta) > 0) {
         $observacion = "Estado " . $rta[0]->estadonombre;
         $this->insertarAuditoria($rta[0]->id, 1, "Autenticación por clave", true, "G", $observacion); //Existe el usuario
-      }
+        $this->usuario = $rta[0];
+      }  
       return $rta;
     }
     //Obtiene el usuario si el login es correcto
@@ -50,14 +51,15 @@ class Usuario extends Core {
       return $rta;
     }
     //Envía correo al usuario para que se autentique
-    function enviarCorreo() {
-      $dato = $this->parametros["emailidentificacion"];
-      $tipousuario = $this->parametros["tipousuario"];
+    function enviarCorreo(array $params = null) {
+      if($params == null) $params = $this->parametros;
+      $dato = $params["emailidentificacion"];
+      $tipousuario = $params["tipousuario"];
       $sqlparams = array("emailidentificacion" => $dato,
-                    "tipo" => $this->parametros["tipousuario"],
-                    "ip" => $this->parametros["ip"]);  
+                    "tipo" => $params["tipousuario"],
+                    "ip" => $this->variablesServidor["ip"]);  
       $data = null;
-      if($this->parametros["metodoautenticacion"] == 1 && ($tipousuario == 1 || $tipousuario == 2)) {//usuario nuevo solo puede ser médico o responsable
+      if($params["metodoautenticacion"] == 1 && ($tipousuario == 1 || $tipousuario == 2)) {//usuario nuevo solo puede ser médico o responsable
         $rta = DB::select('SELECT * FROM seg.fnsst_iniciar(:emailidentificacion, :tipo,  :ip)',$sqlparams);
         if($rta[0]->sesion == "ESUSUARIO") 
           throw new Exception("El correo pertenece a un usuario registrado. Por favor, contactese con Delfos o seleccione la opción adecuada si se le olvidó la clave");
@@ -65,20 +67,23 @@ class Usuario extends Core {
           throw new Exception("Se ha intentado generar un nuevo correo desde otra IP (Identificación de red). Por seguridad, debe esperar al menos una hora para volver a intentarlo");
         if($rta[0]->sesion == "5MINUTOS")
           throw new Exception("Por favor, si no ha recibido el correo revise en su bandeja de spam. Si no lo encuentra, por seguridad, se requiere que espere 5 minutos para volver a intentarlo");
-        $data = $rta[0]->minutos;
+        $data =  array("minutos"=> $rta[0]->minutos);
         $mensaje["servidor"] = $rta[0]->servidor;
         $mensaje["token"] = $rta[0]->sesion;
         Mail::to($dato)->send(new msgUsuario($mensaje, "Registro Delfos"));
-      } else if ($this->parametros["metodoautenticacion"] == 2) { //Usuario olvidó clave enviar clave provisional
-        $rta = DB::select('select * from seg.fnusr_generarclavealeatoria(:emailidentificacion, :tipo,  :ip)',$sqlparams);
+      } else if ($params["metodoautenticacion"] == 2) { //Usuario olvidó clave enviar clave provisional
+        $claves = $this->crearClave();
+        $sqlparams["clave"] = $claves["claveencriptada"];
+
+        $rta = DB::select('SELECT  * FROM seg.fnusr_generarclavealeatoria(:emailidentificacion, :tipo,  :ip, :clave)',$sqlparams);
         if(count($rta)==0)
           throw new Exception("El usuario no fue encontrado");
-        if($rta[0]->clave == "")
+        if(!$rta[0]->generaclave)
           throw new Exception("Al usuario no se le concedió clave porque se le acaba de enviar. Por seguridad, se requiere que espere 5 minutos para volver a intentarlo");
-        $data = $rta[0]->minutos;
+        $data = array("minutos"=> $rta[0]->minutos, "clave"=> $claves["nuevaclave"]);
         $mensaje["servidor"] = $rta[0]->servidor;
         $mensaje["nombre"] = $rta[0]->nombre;
-        $mensaje["clave"] = $rta[0]->clave;
+        $mensaje["clave"] = $claves["nuevaclave"];
         Mail::to($dato)->send(new msgUsuario($mensaje, "Nueva clave Delfos", 'mails.correoClave'));
       } else {
         throw new Exception("Solicitud no válida para la aplicación");
@@ -143,6 +148,12 @@ class Usuario extends Core {
       $encryption = openssl_encrypt($clave, $ciphering, $encryption_key, $options, $encryption_iv);
       return $encryption;
     }
+    //Crear nueva clave 
+    public function crearClave() {
+      $nuevaclave = $this->obtenerResultset("SELECT seg.random_string(10)", ["id" => 1], false, ["id"])[0]->random_string;
+      $claveencriptada = $this->encriptarClave($nuevaclave);
+      return array("nuevaclave"=>$nuevaclave,"claveencriptada"=>$claveencriptada);
+    }
     //Cambiar Clave. Retorna 0 si es exitosa o el número de claves no repetidas
     public function cambiarClave(){
       $params = $this->parametros;
@@ -170,19 +181,20 @@ class Usuario extends Core {
     //Establece el usuario y retorna el número
     public function establecerUsuario(array $params = null){
       if($params == null) $params = $this->parametros;
-      if($this->parametros["id"]== 0) {//Insertar
+      if($this->parametros["id"]<= 0) {//Insertar
         $rta = null;
+        if($params["estado"] == null) $params["estado"] = 1;
         $rta = $this->obtenerResultset("INSERT INTO seg.usr_usuario(usr_id, eus_id, tid_id, usr_identificacion, 
             usr_primer_nombre, usr_segundo_nombre, usr_primer_apellido, usr_segundo_apellido, usr_email, usr_telefonos, 
             usr_fecha_auditoria, usr_id_auditoria, usr_intentos, usr_fecha_creacion)
           VALUES (nextval('seg.sequsr'), :estado, :tipoidentificacionid, :identificacion, 
           :primer_nombre, :segundo_nombre, :primer_apellido, :segundo_apellido, :email, :telefonos,
-            current_timestamp, :usuario, 0, current_timestamp) RETURNING usr_id", 
+            current_timestamp, case when :usuario <=0 then null else :usuario end, 0, current_timestamp) RETURNING usr_id", 
             $params, true, ["auditoria","id", "clave"])[0]->usr_id;
-
+        if(Core::$usuarioID<=0) Core::$usuarioID = $rta;
         $observacion = "Usuario ID: " . $rta . ". Identificacion: " . $params["identificacion"];
         $this->insertarAuditoria(Core::$usuarioID,3, $observacion, true, "I", ""); //Existe el usuario
-        
+                
       } else { //Actualizar
         //throw new Exception(implode("|", array_keys($params)));
          $this->actualizarData("UPDATE seg.usr_usuario SET eus_id = :estado, tid_id = :tipoidentificacionid,
@@ -223,10 +235,11 @@ class Usuario extends Core {
       where r.usr_id = :id");
     }
     //Insertar roles de un usuario
-    public function insertarRolUsuario(){
+    public function insertarRolUsuario(array $params = null){
+      if($params==null) $params = $this->parametros;
       $rta = $this->actualizarData("INSERT INTO seg.rou_rol_usuario (usr_id, tus_id, rou_entidadid, usr_id_auditoria, rou_fecha_auditoria)
-      values(:usuarioid, :tipousuarioid, :entidadrol, :usuario, current_timestamp)", null, true);
-      $observacion = "Usuario ID: " . $this->parametros["usuarioid"] . ". Rol ID: " . $this->parametros["entidadrol"];
+      values(:usuarioid, :tipousuarioid, :entidadrol, :usuario, current_timestamp)", $params, true);
+      $observacion = "Usuario ID: " . $params["usuarioid"] . ". Rol ID: " . $params["entidadrol"];
       $this->insertarAuditoria(Core::$usuarioID,5, $observacion, true, "I", ""); //Existe el usuario
       return $rta;
     }

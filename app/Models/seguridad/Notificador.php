@@ -54,10 +54,8 @@ class Notificador extends Core {
       $params["autoriza_email"] = $this->parametros["autoriza_email"];
       $params["autoriza_sms"] = $this->parametros["autoriza_sms"];
       $params["especialidadid"] = $this->parametros["especialidadid"];
-      $rta = null;
       if($nuevo) {//Insertar
         //throw new Exception(implode("|", $params));
-
         $rta = $this->actualizarData("INSERT INTO oper.ntf_notificador(ntf_id, ntf_pregrado, ntf_registro_medico, ntf_autoriza_email, 
           ntf_autoriza_sms, ntf_fecha_auditoria, usr_id_auditoria, vlc_id_especialidad)
           VALUES (:id, :pregrado, :registro_medico, :autoriza_email, :autoriza_sms, current_timestamp, :usuario, :especialidadid)", 

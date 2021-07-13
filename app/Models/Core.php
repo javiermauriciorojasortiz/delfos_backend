@@ -65,6 +65,7 @@ class Core {
         $params = array("sesion" => $this->variablesServidor["Authorization"], 
                         "ip" => $this->variablesServidor["ip"], 
                         "opcion" => $this->opcion);
+        //throw new Exception(implode("|", $params));
         $rta = DB::select("select seg.fnusr_validarsesion(:sesion, :ip, :opcion)", $params);
         Core::$usuarioID = $rta[0]->fnusr_validarsesion;
         if(Core::$usuarioID == 0) 
