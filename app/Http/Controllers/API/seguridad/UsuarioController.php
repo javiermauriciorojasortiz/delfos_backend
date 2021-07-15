@@ -37,7 +37,7 @@ class UsuarioController extends Controller
         try {
             $data = $usuario->enviarCorreo();
             //Exitoso
-            $rta = array("codigo" => 1, "descripcion" => "Exitoso", "data" => $data);
+            $rta = array("codigo" => $data["registro"]?1:2, "descripcion" => "Exitoso", "data" => $data);
             $usuario->serializarTransaccion();
         } catch(\Exception $ex) { //Fallido
             $usuario->abortarTransaccion();
@@ -157,23 +157,23 @@ class UsuarioController extends Controller
         $notificador = new Notificador($request, 0);
         try {
             $data = null;
-            $nuevo = ($usuario->parametros["id"] <= 0);
             //Obtener los parámetros de usuario
             $params = $this->paramsUsuario($usuario);
             //Verifica si es una operación de registro
+            $nuevo = ($params["id"] <= 0);
             $esregistro = ($params["id"]==null);
             $usuario->iniciarTransaccion();
             //Establece al usuario     
             $id = $usuario->establecerUsuario($params);
-            //Se inserta rol de médico
-            $usuario->insertarRolUsuario(array("usuarioid"=> $id,"tipousuarioid"=> 1, "entidadrol"=> 0));
+            //Se inserta rol de médico solo si es registro
+            if($esregistro) $usuario->insertarRolUsuario(array("usuarioid"=> $id,"tipousuarioid"=> 1, "entidadrol"=> 0));
             //Insertar notificador
             $notificador->establecerNotificador($id, $nuevo);
             //Se verifica si está en registro
             if($esregistro) {
                 $params = array("emailidentificacion"=> $params["email"], 
                                 "tipousuario"=> 1,
-                                "metodoautenticacion"=> 2);
+                                "metodoautenticacion"=> 3);
                 $data = $usuario->enviarCorreo($params);
             }
 
@@ -190,10 +190,10 @@ class UsuarioController extends Controller
         $notificador = new Responsable($request, 0);
         try {
             $data = null;
-            $nuevo = ($usuario->parametros["id"] <= 0);
             //Obtener los parámetros de usuario
             $params = $this->paramsUsuario($usuario);
             //Verifica si es una operación de registro
+            $nuevo = ($params["id"] <= 0);
             $esregistro = ($params["id"]==null);
             $usuario->iniciarTransaccion();
             //Establece al usuario     

@@ -57,7 +57,8 @@ class Usuario extends Core {
       $tipousuario = $params["tipousuario"];
       $sqlparams = array("emailidentificacion" => $dato,
                     "tipo" => $params["tipousuario"],
-                    "ip" => $this->variablesServidor["ip"]);  
+                    "ip" => $this->variablesServidor["ip"]);
+      //throw new Exception(implode("|", $sqlparams)."metodo " . $params["metodoautenticacion"] );
       $data = null;
       if($params["metodoautenticacion"] == 1 && ($tipousuario == 1 || $tipousuario == 2)) {//usuario nuevo solo puede ser médico o responsable
         $rta = DB::select('SELECT * FROM seg.fnsst_iniciar(:emailidentificacion, :tipo,  :ip)',$sqlparams);
@@ -67,11 +68,11 @@ class Usuario extends Core {
           throw new Exception("Se ha intentado generar un nuevo correo desde otra IP (Identificación de red). Por seguridad, debe esperar al menos una hora para volver a intentarlo");
         if($rta[0]->sesion == "5MINUTOS")
           throw new Exception("Por favor, si no ha recibido el correo revise en su bandeja de spam. Si no lo encuentra, por seguridad, se requiere que espere 5 minutos para volver a intentarlo");
-        $data =  array("minutos"=> $rta[0]->minutos);
+        $data =  array("minutos"=> $rta[0]->minutos, "registro" => true);
         $mensaje["servidor"] = $rta[0]->servidor;
         $mensaje["token"] = $rta[0]->sesion;
         Mail::to($dato)->send(new msgUsuario($mensaje, "Registro Delfos"));
-      } else if ($params["metodoautenticacion"] == 2) { //Usuario olvidó clave enviar clave provisional
+      } else if ($params["metodoautenticacion"] == 3) { //Usuario olvidó clave enviar clave provisional
         $claves = $this->crearClave();
         $sqlparams["clave"] = $claves["claveencriptada"];
 
@@ -80,7 +81,7 @@ class Usuario extends Core {
           throw new Exception("El usuario no fue encontrado");
         if(!$rta[0]->generaclave)
           throw new Exception("Al usuario no se le concedió clave porque se le acaba de enviar. Por seguridad, se requiere que espere 5 minutos para volver a intentarlo");
-        $data = array("minutos"=> $rta[0]->minutos, "clave"=> $claves["nuevaclave"]);
+        $data = array("minutos"=> $rta[0]->minutos, "clave"=> $claves["nuevaclave"], "registro" => false);
         $mensaje["servidor"] = $rta[0]->servidor;
         $mensaje["nombre"] = $rta[0]->nombre;
         $mensaje["clave"] = $claves["nuevaclave"];
@@ -150,7 +151,7 @@ class Usuario extends Core {
     }
     //Crear nueva clave 
     public function crearClave() {
-      $nuevaclave = $this->obtenerResultset("SELECT seg.random_string(10)", ["id" => 1], false, ["id"])[0]->random_string;
+      $nuevaclave = DB::select("SELECT seg.random_string(10)")[0]->random_string;
       $claveencriptada = $this->encriptarClave($nuevaclave);
       return array("nuevaclave"=>$nuevaclave,"claveencriptada"=>$claveencriptada);
     }
