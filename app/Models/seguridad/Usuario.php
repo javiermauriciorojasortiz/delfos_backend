@@ -212,9 +212,13 @@ class Usuario extends Core {
     }
     //Obtiene la lista de roles posibles de la base de datos
     public function obtenerTiposUsuario() {
+      $params = $this->parametros;
+      $existe = array_key_exists("externo", $params);
+      if(!($existe)) $params["externo"]=null;
       return $this->obtenerResultset("SELECT tus_id id, tus_nombre nombre, vlc_nombre nombretipoentidad, 
       t.vlc_id_tipo_entidad tipoentidadid, vlc_codigo codigotipoentidad
-      FROM seg.tus_tipo_usuario t inner join conf.vlc_valor_catalogo v on v.vlc_id = t.vlc_id_tipo_entidad");   
+      FROM seg.tus_tipo_usuario t inner join conf.vlc_valor_catalogo v on v.vlc_id = t.vlc_id_tipo_entidad
+      WHERE tus_externo = coalesce(:externo, tus_externo)", $params);   
     }
     //Obtiene la lista de estados del usuario
     public function obtenerEstadosUsuario(){

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Seguridad\Auditoria;
+use App\Models\QUERY_SEG;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
@@ -73,9 +73,10 @@ class Core {
     }
     //Insertar auditoria
     public function insertarAuditoria(int $usuarioid, int $tipoAuditoria, string $descripcion, bool $exitoso, string $operacion, string $observacion = null) : void {
-        $auditoria = new Auditoria($this->request, 0);
-        Core::$usuarioID = $usuarioid;
-        $auditoria->insertar($tipoAuditoria, $descripcion, $exitoso, $operacion, $observacion);
+        DB::update(QUERY_SEG::_AUD_INSERTAR, array ("tipoauditoria" => $tipoAuditoria,
+            "descripcion" => $descripcion, "observacion" => $observacion, "usuario" => $usuarioid,
+            "exitoso" => $exitoso, "operacion" => $operacion
+        ));
     }
     //-----------------------------------------------------------------------------
     //Funciones de base de datos: La aplicación solo ejecutará operaciones contra la BD por acá

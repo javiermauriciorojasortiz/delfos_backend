@@ -3,10 +3,12 @@
 use App\Http\Controllers\API\Configuracion\CatalogoController;
 use App\Http\Controllers\API\Configuracion\DivipolaController;
 use App\Http\Controllers\API\Configuracion\EAPBController;
+use App\Http\Controllers\API\Configuracion\GeneralController;
 use App\Http\Controllers\API\Configuracion\ParametroController;
 use App\Http\Controllers\API\Seguridad\AuditoriaController;
 use App\Http\Controllers\API\Seguridad\UsuarioController;
 use App\Http\Controllers\API\Configuracion\UPGDUIController;
+use App\Http\Controllers\API\Operacion\CasoController;
 use App\Http\Controllers\API\Operacion\ContactoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +59,8 @@ Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAu
 //----------------------------------------------------------------------------------------
 //Configuración
 //----------------------------------------------------------------------------------------
+//Tipo identificación
+Route::get('consultartiposidentificacion', [GeneralController::class, 'consultarTiposIdentificacion']);
 //Catalogos
 Route::post('consultarcatalogos', [CatalogoController::class, 'consultarCatalogos']);
 Route::get('obtenervaloresporcodigocatalogo', [CatalogoController::class, 'obtenerValoresporCodigoCatalogo']);
@@ -92,3 +96,6 @@ Route::post('establecerupgdui', [UPGDUIController::class, 'establecerUPGDUI']);
 Route::get('eliminarupgdui', [UPGDUIController::class, 'eliminarUPGDUI']);
 //Contacto
 Route::get('obtenercontactoporid', [ContactoController::class, 'obtenerContactoPorId']);
+//Caso
+Route::get('consultarcasoporidentificacion', [CasoController::class, 'ConsultarPorIdentificacion']);
+Route::get('consultarcasoporresponsable', [CasoController::class, 'ConsultarPorResponsableID']);
