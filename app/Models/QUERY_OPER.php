@@ -47,4 +47,18 @@ class QUERY_OPER {
       INNER JOIN oper.rpc_responsable_caso rpc on rpc.cso_id = cso.cso_id
       LEFT JOIN conf.vlc_valor_catalogo vlc on vlc.vlc_id = cso.vlc_id_causal_inactivo 
       WHERE rpc.rps_id = :id";
+  //Consultar contacto
+  public const _CTT_OBTENERXID = "SELECT ctt_id id, ctt_nombre nombre, ctt_cargo cargo, ctt_direccion direccion,
+    m.mnc_id municipioid, m.dvp_id departamentoid, ctt_telefono telefono, ctt_email email
+    from oper.ctt_contacto u left join conf.mnc_municipio m on m.mnc_id = u.mnc_id where u.ctt_id = :id";
+  //Insertar contacto
+  public const _CTT_INSERTAR = "INSERT INTO oper.ctt_contacto(ctt_id, ctt_nombre, ctt_cargo, ctt_direccion, mnc_id, 
+    ctt_telefono, ctt_email) VALUES (nextval('oper.seqctt'), :nombre, :cargo, :direccion, :municipioid, 
+    :telefono, :email) RETURNING ctt_id";
+  //Actualizar contacto
+  public const _CTT_ACTUALIZAR = "UPDATE oper.ctt_contacto SET ctt_nombre = :nombre, ctt_cargo = :cargo, ctt_direccion = :direccion,
+    mnc_id = :municipioid, ctt_telefono = :telefono, ctt_email = :email WHERE ctt_id = :id";
+
+  //Eliminar contacto
+  public const _CTT_ELIMINAR = "DELETE FROM oper.ctt_contacto where ctt_id = :id";
 }
