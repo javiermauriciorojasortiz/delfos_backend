@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\API\Operacion;
 
 use App\Http\Controllers\Controller;
-use App\Models\ENUM_OPC;
+use App\Models\Enum\ENUM_OPC;
 use App\Models\Operacion\Caso;
 use Illuminate\Http\Request;
 
@@ -19,5 +19,10 @@ class CasoController extends Controller
   function ConsultarPorResponsableID(Request $request){
     $Caso = new Caso($request, ENUM_OPC::MIS_PACIENTES);
     return $Caso->ConsultarPorResponsableID();
+  }
+  //Listar estados paciente
+  function listarEstadosPaciente(Request $request) {
+    $Caso = new Caso($request, ENUM_OPC::OPCION_GENERAL);
+    return $Caso->listarEstadosPaciente(); 
   }
 }

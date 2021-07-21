@@ -5,7 +5,8 @@ namespace App\Models\Seguridad;
 use App\Mail\msgUsuario;
 use App\Models\Configuracion\Parametro;
 use App\Models\Core;
-use App\Models\QUERY_SEG;
+use App\Models\Enum\ENUM_AUD;
+use App\Models\Query\QUERY_SEG;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +39,7 @@ class Usuario extends Core {
       
       if(count($rta) > 0) {
         $observacion = "Estado " . $rta[0]->estadonombre;
-        $this->insertarAuditoria($rta[0]->id, 1, "Autenticación por clave", true, "G", $observacion); //Existe el usuario
+        $this->insertarAuditoria($rta[0]->id, ENUM_AUD::SOLICITUD_ACCESO, "Autenticación por clave", true, "G", $observacion); //Existe el usuario
         $this->usuario = $rta[0];
       }  
       return $rta;
@@ -86,7 +87,10 @@ class Usuario extends Core {
         $mensaje["servidor"] = $rta[0]->servidor;
         $mensaje["nombre"] = $rta[0]->nombre;
         $mensaje["clave"] = $claves["nuevaclave"];
+        $observacion = "Enviar correo clave aleatoria";
+        Core::$usuarioID = $rta[0]->usuarioid;
         Mail::to($dato)->send(new msgUsuario($mensaje, "Nueva clave Delfos", 'mails.correoClave'));
+        $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::USUARIO, $observacion, true, "C", ""); 
       } else {
         throw new Exception("Solicitud no válida para la aplicación");
       }
@@ -96,7 +100,7 @@ class Usuario extends Core {
     function consultarUsuarios() {
       $rta = $this->obtenerResultset(QUERY_SEG::_USR_CONSULTAR);
       $observacion = "Consultar Usuarios";
-      $this->insertarAuditoria(Core::$usuarioID,3, $observacion, true, "C", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::USUARIO, $observacion, true, "C", ""); 
       return $rta;
     }
     //Obtener menú del usuario autenticado
@@ -111,12 +115,12 @@ class Usuario extends Core {
         $lista = $this->obtenerResultset(QUERY_SEG::_USR_ELIMINAR, $this->parametros);
         $rta = 1;
         $observacion = "Usuario ID: " . $this->parametros["id"] . ". Identificación: " . $lista[0]->usr_identificacion;
-        $this->insertarAuditoria(Core::$usuarioID, 3, $observacion, true, "E", "");     
+        $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::USUARIO, $observacion, true, "E", "");     
       } catch(\Exception $ex){ //Si el usuario ya tiene referencias se inactiva
         $rta = 2;
         $this->actualizarData(QUERY_SEG::_USR_INACTIVAR, $this->parametros);
         $observacion = "Usuario ID : " . $this->parametros["id"] . ". Usuario inactivado, no borrado. Razón: Elementos asociados";
-        $this->insertarAuditoria(Core::$usuarioID, 3, $observacion, true, "M", "");  
+        $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::USUARIO, $observacion, true, "M", "");  
       }
       return $rta;
     }
@@ -145,7 +149,7 @@ class Usuario extends Core {
       $rta = $this->obtenerResultset(QUERY_SEG::_USR_CAMBIARCLAVE, $params, true, ["confirmarclave","emailidentificacion"]);
       if($rta[0]->fnusr_actualizarclave) {
         $observacion = "";
-        $this->insertarAuditoria(Core::$usuarioID, 2, "Cambio de Clave", true, "M", $observacion); //Existe el usuario
+        $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::CAMBIAR_CLAVE, "Cambio de Clave", true, "M", $observacion); //Existe el usuario
       }
       return $rta[0]->fnusr_actualizarclave;
     }
@@ -162,14 +166,14 @@ class Usuario extends Core {
         $rta = $this->obtenerResultset(QUERY_SEG::_USR_INSERTAR, $params, true, ["auditoria","id", "clave"])[0]->usr_id;
         if(Core::$usuarioID<=0) Core::$usuarioID = $rta;
         $observacion = "Usuario ID: " . $rta . ". Identificacion: " . $params["identificacion"];
-        $this->insertarAuditoria(Core::$usuarioID,3, $observacion, true, "I", ""); //Existe el usuario
+        $this->insertarAuditoria(Core::$usuarioID,ENUM_AUD::USUARIO, $observacion, true, "I", ""); //Existe el usuario
                 
       } else { //Actualizar
         //throw new Exception(implode("|", array_keys($params)));
          $this->actualizarData(QUERY_SEG::_USR_ACTUALIZAR, $params, true, ["clave","auditoria"]);
          $rta = $this->parametros["id"];
          $observacion = "Usuario ID: " . $this->parametros["id"] . ". Identificacion: " . $params["identificacion"];
-         $this->insertarAuditoria(Core::$usuarioID,3, $observacion, true, "M", ""); //Existe el usuario
+         $this->insertarAuditoria(Core::$usuarioID,ENUM_AUD::USUARIO, $observacion, true, "M", ""); //Existe el usuario
        }
       return $rta;
     }
@@ -191,14 +195,14 @@ class Usuario extends Core {
       if($params==null) $params = $this->parametros;
       $rta = $this->actualizarData(QUERY_SEG::_USR_INSERTARROL, $params, true);
       $observacion = "Usuario ID: " . $params["usuarioid"] . ". Rol ID: " . $params["entidadrol"];
-      $this->insertarAuditoria(Core::$usuarioID,5, $observacion, true, "I", ""); //Existe el usuario
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::ROL, $observacion, true, "I", ""); //Existe el usuario
       return $rta;
     }
     //Eliminar roles de un usuario
     public function eliminarRolUsuario(){
       $rta = $this->actualizarData(QUERY_SEG::_USR_ELIMINARROL);
       $observacion = "Usuario ID: " . $this->parametros["usuarioid"] . ". Rol ID: " . $this->parametros["entidadid"];
-      $this->insertarAuditoria(Core::$usuarioID,5, $observacion, true, "E", ""); //Existe el usuario
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::ROL, $observacion, true, "E", ""); //Existe el usuario
       return $rta;
     }
     //Funciónes de sesión temporal ---------------------------------------------------------------------
@@ -207,4 +211,12 @@ class Usuario extends Core {
       return (- CORE::$usuarioID);
     }
     //Fin de funciónes de sesión temporal --------------------------------------------------------------  
+
+    //Consultar participantes
+    public function consultarParticipantes(){
+      $rta = $this->obtenerResultset(QUERY_SEG::_USR_CONSULTARPARTICIPANTE);
+      $observacion = "Consultar Participantes";
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::PARTICIPANTE, $observacion, true, "C", ""); 
+      return $rta;
+    }
 }

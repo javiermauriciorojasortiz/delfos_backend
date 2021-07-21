@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\API\Configuracion;
 
 use App\Http\Controllers\Controller;
-use App\Models\Configuracion\Catalogo;
 use App\Models\Configuracion\General;
-use App\Models\ENUM_OPC;
+use App\Models\Enum\ENUM_OPC;
 use Illuminate\Http\Request;
 
 //Clase controladora de los catálogos

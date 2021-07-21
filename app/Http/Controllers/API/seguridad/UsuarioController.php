@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Seguridad;
 
 use App\Http\Controllers\Controller;
 use App\Models\Configuracion\Parametro;
+use App\Models\Enum\ENUM_OPC;
 use App\Models\Seguridad\Notificador;
 use App\Models\Seguridad\Responsable;
 use App\Models\Seguridad\Usuario;
@@ -15,24 +16,24 @@ class UsuarioController extends Controller
 {
     //Lista de usuarios desde la consulta
     public function consultarUsuarios(Request  $request){
-        $usuario = new Usuario($request, 0);
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
         return $usuario->consultarUsuarios();
     }
     //Autenticar al usuario desde la página de login
     public function autenticar(Request $request) {
-        $usuario = new Usuario($request, 0);
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
         return $usuario->autenticar();
     }
     //Autenticar al usuario por el token guardado en las cookies del cliente
     public function autenticarporToken(Request $request){
-        $usuario = new Usuario($request, 0); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
         return $usuario->autenticarporToken();;
     }
     //Enviar correo 
     public function enviarcorreo(Request $request){
         //Inicializar la respuesta
         $rta = [];
-        $usuario = new Usuario($request, 0);
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
         $usuario->iniciarTransaccion();
         try {
             $data = $usuario->enviarCorreo();
@@ -47,7 +48,7 @@ class UsuarioController extends Controller
     }
     //Obtiene las opciones de menú del usuario
     public function obtenerMenuUsuario(Request $request){
-        $usuario = new Usuario($request, 0);
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
         return $usuario->obtenerMenuUsuario();
     }
     //Eliminar usuario
@@ -59,8 +60,8 @@ class UsuarioController extends Controller
     }
     //Cambiar Clave
     public function cambiarClave(Request $request){
-        $usuario = new Usuario($request, 0); 
-        $prmGeneral = new Parametro($request, 0);
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
+        $prmGeneral = new Parametro($request, ENUM_OPC::OPCION_GENERAL);
 
         $intento = $usuario->autenticar(true);
         $rta["codigo"] = 0;
@@ -92,22 +93,22 @@ class UsuarioController extends Controller
     }
     //Obtener usuario por id
     public function obtenerUsuarioporID(Request $request){
-        $usuario = new Usuario($request, 0); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
         return $usuario->obtenerUsuarioporID();   
     }
     //Obtener usuario por id
     public function obtenerNotificador(Request $request){
-        $notificador = new Notificador($request, 0); 
+        $notificador = new Notificador($request, ENUM_OPC::OPCION_GENERAL); 
         return json_encode($notificador->obtenerNotificador());    
     }
     //Obtener usuario por id
     public function obtenerResponsable(Request $request){
-        $responsable = new Responsable($request, 0); 
+        $responsable = new Responsable($request, ENUM_OPC::OPCION_GENERAL); 
         return json_encode($responsable->obtenerResponsable());    
     }
     //Establece el usuario y retorna el número
     public function establecerUsuario(Request $request){
-        $usuario = new Usuario($request, 0); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
         $usuario->iniciarTransaccion();
         $rta = $usuario->establecerUsuario();   
         $usuario->serializarTransaccion();
@@ -115,27 +116,27 @@ class UsuarioController extends Controller
     }
     //Obtiene la lista de roles posibles de la base de datos
     public function obtenerTiposUsuario(Request $request) {
-        $usuario = new Usuario($request, 0); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
         return $usuario->obtenerTiposUsuario();   
     }
     //Obtiene la lista de estados del usuario
     public function obtenerEstadosUsuario(Request $request){
-        $usuario = new Usuario($request, 0); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
         return $usuario->obtenerEstadosUsuario();
     }
     //Obtener lista de roles asociados al usuario
     public function obtenerRolesUsuario(Request $request){
-        $usuario = new Usuario($request, 0); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
         return $usuario->obtenerRolesUsuario();   
     }
     //Insertar nuevo rol para el usuario
     public function insertarRolUsuario(Request $request){
-        $usuario = new Usuario($request, 0); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
         return $usuario->insertarRolUsuario();   
     }
     //Eliminar un rol del usuario
     public function eliminarRolUsuario(Request $request){
-        $usuario = new Usuario($request, 0); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 
         return $usuario->eliminarRolUsuario();   
     }
     //Parametros para establecer el usuario notificador/responsable
@@ -153,8 +154,8 @@ class UsuarioController extends Controller
     }
     //Establece la información de un usuario notificador
     public function establecerNotificador(Request $request){
-        $usuario = new Usuario($request, 0);
-        $notificador = new Notificador($request, 0);
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
+        $notificador = new Notificador($request, ENUM_OPC::OPCION_GENERAL);
         try {
             $data = null;
             //Obtener los parámetros de usuario
@@ -186,8 +187,8 @@ class UsuarioController extends Controller
     }
     //Establece la información de un usuario notificador
     public function establecerResponsable(Request $request){
-        $usuario = new Usuario($request, 0);
-        $notificador = new Responsable($request, 0);
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
+        $notificador = new Responsable($request, ENUM_OPC::OPCION_GENERAL);
         try {
             $data = null;
             //Obtener los parámetros de usuario
@@ -199,7 +200,7 @@ class UsuarioController extends Controller
             //Establece al usuario     
             $id = $usuario->establecerUsuario($params);
             //Se inserta rol de médico
-            $usuario->insertarRolUsuario(array("usuarioid"=> $id,"tipousuarioid"=> 2, "entidadrol"=> 0));
+            if($esregistro) $usuario->insertarRolUsuario(array("usuarioid"=> $id,"tipousuarioid"=> 2, "entidadrol"=> 0));
             //Se establece el responsable
             $notificador->establecerResponsable($id, $nuevo);
             //Se verifica si está en registro
@@ -218,7 +219,12 @@ class UsuarioController extends Controller
     }
     //Autenticar al usuario por sesión temporal
     public function autenticarPorSesionTemporal(Request $request){
-        $usuario = new Usuario($request, -12345); 
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_SIN_SESION); 
         return $usuario->autenticarPorSesionTemporal();
+    }
+    //Consultar participantes
+    public function consultarParticipantes(Request  $request){
+        $usuario = new Usuario($request, ENUM_OPC::PARTICIPANTES);
+        return $usuario->consultarParticipantes();
     }
 }

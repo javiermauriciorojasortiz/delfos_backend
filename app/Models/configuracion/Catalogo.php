@@ -3,14 +3,14 @@
 namespace App\Models\Configuracion;
 
 use App\Models\APPBASE;
-use App\Models\ENUM_AUD;
-use App\Models\QUERY_CONF;
+use App\Models\Enum\ENUM_AUD;
+use App\Models\Query\QUERY_CONF;
 use Illuminate\Http\Request;
 
 //Clase de gestión del catálogo de valores
 class Catalogo extends APPBASE{
 
-  //Construye el modelo
+  //Construye el modelos
   function __construct(Request $request, int $opcion) {
     parent::__construct($request, $opcion);
   }

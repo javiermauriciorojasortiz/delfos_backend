@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Enum;
 
 //Lista de tipos de auditoría disponible en el sistema
 class ENUM_OPC {
-		public const OPCION_SIN_SESION = -1234;
+		public const OPCION_SIN_SESION = -12345;
 		public const OPCION_GENERAL = 0;
 		public const CONFIGURACION = 1;
 		public const SEGURIDAD = 2;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Query;
 
 //Clase de lista querys de configuración
 class QUERY_CONF {
@@ -129,6 +129,8 @@ class QUERY_CONF {
     left join seg.usr_usuario u on u.usr_id = e.usr_id_auditoria
     where LOWER(eap_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'
     and LOWER(eap_nombre) like '%' || LOWER(coalesce(:nombre,'')) || '%'";
+  //Listar EAPB
+  public const _EAP_LISTAR = "SELECT eap_id id, eap_nombre nombre from conf.eap_eapb order by 2";
   //Eliminar EAPB
   public const _EAP_ELIMINAR = "DELETE FROM conf.eap_eapb where eap_id = :id RETURNING eap_id, eap_codigo, eap_nombre";
   //Insertar EAPB
@@ -158,13 +160,14 @@ class QUERY_CONF {
           from conf.prg_parametro_general p where LOWER(prg_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'";
   //Consultar upgd ui
   public const _UPU_CONSULTAR = "SELECT upu_id id, upu_codigo codigo, upu_nombre nombre, upu_activo activo, 
-    mnc_codigo || '-' || mnc_nombre municipio, vlc_nombre subred, v.vlc_id subredid,
+    mnc_codigo || '-' || mnc_nombre municipio, v.vlc_nombre subred, v.vlc_id subredid, n.vlc_nombre nivel,
     case when upu_esupgd = CAST (1 as bit) then 'UPGD' else 'UI' end tipo, upu_esupgd esupgd, ctt_id_principal contactoprincipalid,
-    ctt_id_secundario contactosecundarioid, dvp_id departamentoid, m.mnc_id municipioid,
+    ctt_id_secundario contactosecundarioid, dvp_id departamentoid, m.mnc_id municipioid, n.vlc_id nivelid, upu_direccion direccion,
     usr_primer_nombre || ' ' || usr_primer_apellido || ' ' || to_char(e.upu_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria
     from conf.upu_upgd_ui e
     inner join conf.mnc_municipio m on m.mnc_id = e.mnc_id
     left join conf.vlc_valor_catalogo v on e.vlc_id_subred = v.vlc_id
+    left join conf.vlc_valor_catalogo n on e.vlc_id_nivel = n.vlc_id
     left join seg.usr_usuario u on u.usr_id = e.usr_id_auditoria
     where LOWER(upu_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'
     and LOWER(upu_nombre) like '%' || LOWER(coalesce(:nombre,'')) || '%'
@@ -173,12 +176,16 @@ class QUERY_CONF {
   public const _UPU_ELIMINAR = "DELETE FROM conf.upu_upgd_ui where upu_id = :id RETURNING upu_nombre";
   //Insertar upgd
   public const _UPU_INSERTAR = "INSERT INTO conf.upu_upgd_ui (upu_id, upu_codigo, upu_nombre, upu_esupgd, upu_activo, 
-    mnc_id, vlc_id_subred, ctt_id_principal, ctt_id_secundario, upu_fecha_auditoria, usr_id_auditoria)
+    mnc_id, vlc_id_subred, ctt_id_principal, ctt_id_secundario, upu_fecha_auditoria, usr_id_auditoria, upu_direccion, vlc_id_nivel)
     VALUES (nextval('conf.sequpu'), :codigo, :nombre, :esupgd, :activo, :municipioid, :subredid, :contactoprincipalid, 
-    :contactosecundarioid, current_timestamp, :usuario) RETURNING upu_id";
+    :contactosecundarioid, current_timestamp, :usuario, :direccion, :nivelid) RETURNING upu_id";
   //Actualizar upgd
   public const _UPU_ACTUALIZAR = "UPDATE conf.upu_upgd_ui SET upu_codigo = :codigo, upu_nombre = :nombre, 
     upu_esupgd = :esupgd, upu_activo = :activo, mnc_id = :municipioid, vlc_id_subred = :subredid,
     ctt_id_principal = :contactoprincipalid, ctt_id_secundario = :contactosecundarioid, 
+    upu_direccion = :direccion, vlc_id_nivel = :nivelid,
     upu_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario WHERE upu_id = :id";
+
+//Listar UPGDs disponibles
+public const _UPU_LISTAR = "SELECT upu_id id, upu_nombre nombre from conf.upu_upgd_ui order by 2";
 }

@@ -3,8 +3,8 @@
 namespace App\Models\Seguridad;
 
 use App\Models\APPBASE;
-use App\Models\ENUM_AUD;
-use App\Models\QUERY_SEG;
+use App\Models\Enum\ENUM_AUD;
+use App\Models\Query\QUERY_SEG;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -19,7 +19,7 @@ class Auditoria extends APPBASE {
   }
   //Consultar auditoría
   function consultarAuditoria() {
-    $rta = $this->obtenerResultset(QUERY_SEG::_AUD_CONSULTAR, $this->listarParamRequeridos());
+    $rta = $this->obtenerResultset(QUERY_SEG::_AUD_CONSULTAR);
     $observacion = "Consulta General de Auditoría";
     $this->insertarAuditoria(ENUM_AUD::AUDITORIA, $observacion, true, "C", ""); //Existe el usuario
     return $rta;

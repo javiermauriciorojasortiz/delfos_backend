@@ -3,10 +3,9 @@
 namespace App\Models\Configuracion;
 
 use App\Models\Core;
-use App\Models\QUERY_CONF;
-use App\Models\QUERY_OPER;
+use App\Models\Enum\ENUM_AUD;
+use App\Models\Query\QUERY_CONF;
 use Exception;
-use GuzzleHttp\Psr7\Message;
 use Illuminate\Http\Request;
 
 
@@ -21,7 +20,7 @@ class Divipola extends Core{
   function consultarDivipolas() {
     $rta = $this->obtenerResultset(QUERY_CONF::_DVP_CONSULTAR);
     $observacion = "Consultar Departamento";
-    $this->insertarAuditoria(Core::$usuarioID,13, $observacion, true, "C", ""); 
+    $this->insertarAuditoria(Core::$usuarioID,ENUM_AUD::DEPARTAMENTO, $observacion, true, "C", ""); 
     return $rta;
   }
   //Listar divipolas
@@ -33,7 +32,7 @@ class Divipola extends Core{
     try {
       $rta = $this->obtenerResultset(QUERY_CONF::_DVP_ELIMINAR); 
       $observacion = "Departamento ID : " . $this->parametros["id"] . ". Código: " . $rta[0]->dvp_codigo . ". Nombre: " . $rta[0]->dvp_nombre;;;
-      $this->insertarAuditoria(Core::$usuarioID, 13, $observacion, true, "E", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::DEPARTAMENTO, $observacion, true, "E", ""); 
       return array("codigo" => 1, "descripcion" =>"Eliminación exitosa");
     } catch (Exception $e) {
       return array("codigo" => 2, "descripcion" => $e->getMessage());
@@ -46,12 +45,12 @@ class Divipola extends Core{
       $rta = $this->obtenerResultset(QUERY_CONF::_DVP_INSERTAR, null, true, ["id"]);
       $observacion = "Departamento ID: " . $rta[0]->dvp_id . ". Codigo: " . $this->parametros["codigo"] 
           . ". Nombre: " . $this->parametros["nombre"];
-      $this->insertarAuditoria(Core::$usuarioID, 13, $observacion, true, "I", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::DEPARTAMENTO, $observacion, true, "I", ""); 
     } else {
       $rta = $this->actualizarData(QUERY_CONF::_DVP_ACTUALIZAR, null, true);
       $observacion = "Departamento ID: " . $this->parametros["id"] . ". Codigo: " . $this->parametros["codigo"] 
           . ". Nombre: " . $this->parametros["nombre"];
-      $this->insertarAuditoria(Core::$usuarioID, 13, $observacion, true, "M", "");  
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::DEPARTAMENTO, $observacion, true, "M", "");  
     }
     return $rta;
   }
@@ -67,12 +66,12 @@ class Divipola extends Core{
       $rta = $this->obtenerResultset(QUERY_CONF::_MNC_INSERTAR, null, true, ["id"]);
       $observacion = "Municipio ID: " . $rta[0]->mnc_id . ". Codigo: " . $this->parametros["codigo"] 
               . ". Nombre: " . $this->parametros["nombre"];
-      $this->insertarAuditoria(Core::$usuarioID, 14, $observacion, true, "I", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::MUNICIPIO, $observacion, true, "I", ""); 
     } else {
       $rta = $this->actualizarData(QUERY_CONF::_MNC_ACTUALIZAR, null, true, ["departamentoid"]);
       $observacion = "Municipio ID: " . $this->parametros["id"] . ". Codigo: " . $this->parametros["codigo"] 
         . ". Nombre: " . $this->parametros["nombre"];
-      $this->insertarAuditoria(Core::$usuarioID, 14, $observacion, true, "M", "");     
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::MUNICIPIO, $observacion, true, "M", "");     
     }
     return $rta;
   }
@@ -85,7 +84,7 @@ class Divipola extends Core{
     try {
       $rta = $this->obtenerResultset(QUERY_CONF::_MNC_ELIMINAR); 
       $observacion = "Municipio ID : " . $this->parametros["id"] . ". Código: " . $rta[0]->mnc_codigo . ". Nombre: " . $rta[0]->mnc_nombre;
-      $this->insertarAuditoria(Core::$usuarioID, 14, $observacion, true, "E", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::MUNICIPIO, $observacion, true, "E", ""); 
       return array("codigo" => 1, "descripcion" =>"Eliminación exitosa");
     } catch (Exception $e) {
       return array("codigo" => 2, "descripcion" => $e->getMessage());
@@ -100,15 +99,15 @@ class Divipola extends Core{
   function establecerZona(){
     $rta = null;
     if($this->parametros["id"] == 0){
-      $rta =  $this->obtenerResultset(QUERY_CONF::_ZNA_ACTUALIZAR, null, true, ["id"]);
+      $rta =  $this->obtenerResultset(QUERY_CONF::_ZNA_INSERTAR, null, true, ["id"]);
       $observacion = "Zona ID: " . $rta[0]->zna_id . ". Codigo: " . $this->parametros["codigo"] 
           . ". Nombre: " . $this->parametros["nombre"];
-      $this->insertarAuditoria(Core::$usuarioID, 15, $observacion, true, "I", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::ZONA, $observacion, true, "I", ""); 
     } else {
       $rta =  $this->actualizarData(QUERY_CONF::_ZNA_ACTUALIZAR, null, true, ["municipioid"]);
       $observacion = "Zona ID: " . $this->parametros["id"] . ". Codigo: " . $this->parametros["codigo"] 
         . ". Nombre: " . $this->parametros["nombre"];
-      $this->insertarAuditoria(Core::$usuarioID, 15, $observacion, true, "M", "");     
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::ZONA, $observacion, true, "M", "");     
     }
     return $rta;
   }
@@ -117,7 +116,7 @@ class Divipola extends Core{
     try {
       $rta = $this->obtenerResultset(QUERY_CONF::_ZNA_ELIMINAR); 
       $observacion = "Zona ID : " . $this->parametros["id"]  . ". Código: " . $rta[0]->zna_codigo . ". Nombre: " . $rta[0]->zna_nombre;
-      $this->insertarAuditoria(Core::$usuarioID, 15, $observacion, true, "E", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::ZONA, $observacion, true, "E", ""); 
       return array("codigo" => 1, "descripcion" =>"Eliminación exitosa");
     } catch (Exception $e) {
       return array("codigo" => 2, "descripcion" => $e->getMessage());
@@ -134,7 +133,7 @@ class Divipola extends Core{
     try {
       $rta = $this->obtenerResultset(QUERY_CONF::_BRR_ELIMINAR); 
       $observacion = "Barrio ID : " . $this->parametros["id"]  . ". Código: " . $rta[0]->brr_codigo . ". Nombre: " . $rta[0]->brr_nombre;;
-      $this->insertarAuditoria(Core::$usuarioID, 4, $observacion, true, "E", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::BARRIO, $observacion, true, "E", ""); 
       return array("codigo" => 1, "descripcion" =>"Eliminación exitosa");
     } catch (Exception $e) {
       return array("codigo" => 2, "descripcion" => $e->getMessage());
@@ -148,13 +147,13 @@ class Divipola extends Core{
 
       $observacion = "Barrio ID: " . $rta[0]->brr_id . ". Codigo: " . $this->parametros["codigo"] 
         . ". Nombre: " . $this->parametros["nombre"];
-      $this->insertarAuditoria(Core::$usuarioID, 4, $observacion, true, "I", ""); 
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::BARRIO, $observacion, true, "I", ""); 
     } else {
       $rta =  $this->actualizarData(QUERY_CONF::_BRR_ACTUALIZAR, null, true);
 
       $observacion = "Barrio ID: " . $this->parametros["id"] . ". Codigo: " . $this->parametros["codigo"] 
       . ". Nombre: " . $this->parametros["nombre"];
-      $this->insertarAuditoria(Core::$usuarioID, 4, $observacion, true, "M", ""); //Existe el elemento
+      $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::BARRIO, $observacion, true, "M", ""); //Existe el elemento
     }
     return $rta;
   }

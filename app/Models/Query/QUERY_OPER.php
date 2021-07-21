@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Query;
 
 //Clase de gestión de auditoría
 class QUERY_OPER {
@@ -32,10 +32,6 @@ class QUERY_OPER {
     INNER JOIN conf.mnc_municipio mnc on mnc.mnc_id = cso.mnc_id
     LEFT JOIN seg.usr_usuario usr on usr.usr_id = cso.usr_id_auditoria
     where cso.cso_id = :id";
-
-
-
-
   
   //Consultar casos por responsable
   public const _CSO_CONSULTARPORRPSID = "SELECT cso.cso_id id, tid_codigo || cso_identificacion identificacion, 
@@ -61,4 +57,8 @@ class QUERY_OPER {
 
   //Eliminar contacto
   public const _CTT_ELIMINAR = "DELETE FROM oper.ctt_contacto where ctt_id = :id";
+  //Listar estados paciente
+  public const _ESP_LISTAR = "SELECT esp_id id, esp_nombre nombre, vlc_id_nivel_riesgo nivelriesgoid, vlc_nombre nivelriesgo,
+    vlc_codigo codigo FROM oper.esp_estado_paciente e inner join conf.vlc_valor_catalogo v on v.vlc_id = e.vlc_id_nivel_riesgo 
+    order by 2";
 }

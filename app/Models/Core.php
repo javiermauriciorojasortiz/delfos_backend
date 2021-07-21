@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\QUERY_SEG;
+use App\Models\Query\QUERY_SEG;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;

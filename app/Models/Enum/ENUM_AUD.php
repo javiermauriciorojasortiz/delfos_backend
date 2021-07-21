@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Enum;
 
 //Lista de tipos de auditoría disponible en el sistema
 class ENUM_AUD {
@@ -20,4 +20,5 @@ class ENUM_AUD {
 	public const MUNICIPIO = 14;
 	public const ZONA = 15;
   public const CASO = 16;
+	public const PARTICIPANTE = 17;
 }

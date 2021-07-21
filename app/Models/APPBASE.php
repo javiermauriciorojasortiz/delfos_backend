@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\QUERY_SEG;
+use App\Models\Enum\ENUM_OPC;
+use App\Models\Query\QUERY_SEG;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
@@ -72,6 +73,7 @@ class APPBASE {
   }
   //Obtener resultados
   public function obtenerResultset(string $consulta, array $parametros = [], bool $incluirUsuario = false) {
+    if(count($parametros) == 0) $parametros = $this->parametros;
     if($incluirUsuario) 
       $parametros += ["usuario" => $this->usuarioID];
 
@@ -80,6 +82,7 @@ class APPBASE {
   }
   //Obtener registro base de datos
   public function obtenerRegistro(string $consulta, array $parametros = [], bool $incluirUsuario = false)  {
+    if(count($parametros) == 0) $parametros = $this->parametros;
     if($incluirUsuario) 
       $parametros += ["usuario" => $this->usuarioID];
 
@@ -88,6 +91,7 @@ class APPBASE {
   }
   //Ejecutar consulta sin retorno
   public function actualizarData(string $consulta, array $parametros = [], bool $incluirUsuario = false) : int {
+    if(count($parametros) == 0) $parametros = $this->parametros;
     if($incluirUsuario) 
       $parametros += ["usuario" => $this->usuarioID];
 

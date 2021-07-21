@@ -2,15 +2,13 @@
 
 namespace App\Models\Operacion;
 
-use App\Models\Core;
-use App\Models\QUERY_OPER;
+use App\Models\APPBASE;
+use App\Models\Query\QUERY_OPER;
 use Exception;
 use Illuminate\Http\Request;
 
 //Clase de gestión de auditoría
-class Contacto extends Core {
-  //Variable de usuario
-  public $usuario;
+class Contacto extends APPBASE {
 
   //Construye el modelo
   function __construct(Request $request, int $opcion) {
@@ -25,11 +23,12 @@ class Contacto extends Core {
   public function establecerContacto(array $argumentos){
     //throw new Exception(implode("|", $params));
     if($argumentos["id"]==0) {//Insertar
-
-      return $this->obtenerResultset(QUERY_OPER::_CTT_INSERTAR, $argumentos, false, ["id","departamentoid"])[0]->ctt_id;
+      unset($argumentos["id"]);
+      unset($argumentos["departamentoid"]);
+      return $this->obtenerResultset(QUERY_OPER::_CTT_INSERTAR, $argumentos, false)[0]->ctt_id;
     } else { //Actualizar
-
-      $this->actualizarData(QUERY_OPER::_CTT_ACTUALIZAR, $argumentos, false, ["departamentoid"]);
+      unset($argumentos["departamentoid"]);
+      $this->actualizarData(QUERY_OPER::_CTT_ACTUALIZAR, $argumentos, false);
       return $argumentos["id"];
     }
   }

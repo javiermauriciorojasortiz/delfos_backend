@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Query;
 
 //Clase de gestión de auditoría
 class QUERY_SEG {
@@ -82,7 +82,7 @@ class QUERY_SEG {
     where (exists(select 1 from seg.rou_rol_usuario r where r.usr_id = u.usr_id and (r.tus_id = :tipousuario)) or :tipousuario = 0)
       and (LOWER(u.usr_primer_nombre || u.usr_primer_apellido) like  '%' || coalesce(LOWER(:nombreusuario),'') || '%')
       and (LOWER(u.usr_email) like '%' || coalesce(LOWER(:emailusuario),'') || '%')
-      and u.usr_fecha_creacion between coalesce(:fechainiusuario, TO_DATE('20000101', 'YYYYMMDD')) and coalesce(:fechafinusuario, TO_DATE('21000101', 'YYYYMMDD'))
+      and DATE(u.usr_fecha_acceso) between coalesce(:fechainiusuario, TO_DATE('20000101', 'YYYYMMDD')) and coalesce(:fechafinusuario, TO_DATE('21000101', 'YYYYMMDD'))
       and o.eus_id = coalesce(:estadousuario, o.eus_id) 
       limit 1000";
   //Iniciar sesión temporal
@@ -157,5 +157,39 @@ class QUERY_SEG {
   public const _NTF_VALIDAR = "UPDATE oper.ntf_notificador SET  usr_id_valida = :usuario, 
     ntf_fecha_valida = current_timestamp, ntf_anotacion_valida = :anotacion,
     WHERE ntf_id = :id";
-
+  //Responsable establecer
+  public const _RPS_INSERTAR = "INSERT INTO oper.rps_responsable(rps_id, rps_autoriza_email, rps_autoriza_sms,  
+    rps_fecha_auditoria, usr_id_auditoria)
+    VALUES (:id, :autoriza_email, :autoriza_sms, current_timestamp, :usuario)";
+  //Responsable actualizar
+  public const _RPS_ACTUALIZAR = "UPDATE oper.rps_responsable SET rps_autoriza_email = :autoriza_email, 
+    rps_autoriza_sms = :autoriza_sms, rps_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario
+    WHERE rps_id = :id";
+  //Obtener responsable por id
+  public const _RPS_OBTENERXID = "SELECT distinct u.usr_id id, u.eus_id estado, u.tid_id tipoidentificacionid, u.usr_identificacion identificacion,
+    u.usr_primer_nombre primer_nombre, u.usr_segundo_nombre segundo_nombre, u.usr_primer_apellido primer_apellido,
+    u.usr_segundo_apellido segundo_apellido, u.usr_email email, u.usr_telefonos telefonos, u.usr_fecha_acceso fecha_acceso,
+    u.usr_fecha_activacion fecha_activacion, u.usr_fecha_intento fecha_intento,
+    a.usr_primer_nombre || ' ' || a.usr_primer_apellido || ' ' || to_char(n.rps_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria,
+    rps_autoriza_email autoriza_email, rps_autoriza_sms autoriza_sms
+    from seg.usr_usuario u left join oper.rps_responsable n on n.rps_id = u.usr_id
+    left join seg.usr_usuario a on a.usr_id = n.usr_id_auditoria
+    where u.usr_id = :id";
+  //Consultar participantes externos
+    //Consultar participantes
+  public const _USR_CONSULTARPARTICIPANTE = "SELECT distinct u.usr_id id, o.eus_nombre estado, 
+                  tid_codigo || ' ' || u.usr_identificacion identificacion,
+                  u.usr_primer_nombre || ' ' || u.usr_primer_apellido nombre, u.usr_fecha_acceso fecha_acceso,
+                  l.tus_nombre  tipousuario, l.tus_id tipo
+      FROM seg.usr_usuario u 
+      inner join conf.tid_tipo_identificacion t on t.tid_id = u.tid_id
+      inner join seg.eus_estado_usuario o on o.eus_id = u.eus_id 
+      inner join seg.rou_rol_usuario r on r.usr_id = u.usr_id and r.tus_id in (1,2)
+      inner join seg.tus_tipo_usuario l on l.tus_id = r.tus_id
+      where r.tus_id = coalesce(:tipo, r.tus_id)
+        and (LOWER(u.usr_primer_nombre || ' ' || u.usr_primer_apellido) like  '%' || coalesce(LOWER(:nombre),'') || '%')
+        and (LOWER(u.usr_identificacion) like '%' || coalesce(LOWER(:identificacion),'') || '%')
+        and DATE(u.usr_fecha_acceso) between coalesce(:fechaini, TO_DATE('20000101', 'YYYYMMDD')) and coalesce(:fechafin, TO_DATE('21000101', 'YYYYMMDD'))
+        and o.eus_id = coalesce(:estado, o.eus_id) 
+        limit 1000";
 }

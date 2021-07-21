@@ -53,6 +53,7 @@ Route::post('establecerresponsable', [UsuarioController::class, 'establecerRespo
 Route::get('obtenernotificador', [UsuarioController::class, 'obtenerNotificador']);
 Route::get('obtenerresponsable', [UsuarioController::class, 'obtenerResponsable']);
 Route::get('autenticarporsesiontemporal', [UsuarioController::class, 'autenticarPorSesionTemporal']);
+Route::post('consultarparticipantes', [UsuarioController::class, 'consultarParticipantes']);
 //Auditoría
 Route::post('consultarauditoria', [AuditoriaController::class, 'consultarAuditoria']);
 Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAuditoria']);
@@ -90,12 +91,15 @@ Route::get('obtenersecretarias', [DivipolaController::class, 'obtenerSecretarias
 Route::post('consultareapbs', [EAPBController::class, 'consultarEAPBs']);
 Route::post('establecereapb', [EAPBController::class, 'establecerEAPB']);
 Route::get('eliminareapb', [EAPBController::class, 'eliminarEAPB']);
+Route::get('listareapbs', [EAPBController::class, 'listarEAPBs']);
 //UPGD-UI
 Route::post('consultarupgduis', [UPGDUIController::class, 'consultarUPGDUIs']);
 Route::post('establecerupgdui', [UPGDUIController::class, 'establecerUPGDUI']);
 Route::get('eliminarupgdui', [UPGDUIController::class, 'eliminarUPGDUI']);
+Route::get('listarupgduis', [UPGDUIController::class, 'listarUPGDUIs']);
 //Contacto
 Route::get('obtenercontactoporid', [ContactoController::class, 'obtenerContactoPorId']);
 //Caso
 Route::get('consultarcasoporidentificacion', [CasoController::class, 'ConsultarPorIdentificacion']);
 Route::get('consultarcasoporresponsable', [CasoController::class, 'ConsultarPorResponsableID']);
+Route::get('listarestadospaciente', [CasoController::class, 'listarEstadosPaciente']);

@@ -3,7 +3,7 @@
 namespace App\Models\Configuracion;
 
 use App\Models\APPBASE;
-use App\Models\QUERY_CONF;
+use App\Models\Query\QUERY_CONF;
 use Illuminate\Http\Request;
 
 //Clase de gestión del catálogo de valores
