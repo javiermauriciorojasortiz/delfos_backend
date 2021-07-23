@@ -186,6 +186,6 @@ class QUERY_CONF {
     upu_direccion = :direccion, vlc_id_nivel = :nivelid,
     upu_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario WHERE upu_id = :id";
 
-//Listar UPGDs disponibles
-public const _UPU_LISTAR = "SELECT upu_id id, upu_nombre nombre from conf.upu_upgd_ui order by 2";
+  //Listar UPGDs disponibles
+  public const _UPU_LISTAR = "SELECT upu_id id, upu_nombre nombre from conf.upu_upgd_ui order by 2";
 }
