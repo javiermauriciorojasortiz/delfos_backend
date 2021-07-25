@@ -5,6 +5,7 @@ namespace App\Models\Seguridad;
 use App\Models\APPBASE;
 use App\Models\Enum\ENUM_AUD;
 use App\Models\Query\QUERY_SEG;
+use Exception;
 use Illuminate\Http\Request;
 
 //Clase de gestión del usuario
@@ -32,16 +33,18 @@ class Notificador extends APPBASE {
                     "autoriza_email" => $this->parametros["autoriza_email"],
                     "autoriza_sms" => $this->parametros["autoriza_sms"],
                     "especialidadid" => $this->parametros["especialidadid"]);
-    if($nuevo) {//Insertar
+
+    if($nuevo == 1) {//Insertar      
       //throw new Exception(implode("|", $params));
+      if($this->usuarioID <= 0) $this->usuarioID = $id;
       $rta = $this->actualizarData(QUERY_SEG::_NTF_INSERTAR, $params, true);
       $observacion = "Usuario ID: " . $params["id"] . ". Identificacion: " . $this->parametros["identificacion"];
-      $this->insertarAuditoria($this->usuarioID, ENUM_AUD::NOTIFICADOR, $observacion, true, "I", ""); //Existe el usuario
+      $this->insertarAuditoria(ENUM_AUD::NOTIFICADOR, $observacion, true, "I", ""); //Existe el usuario
     } else { //Actualizar
       
       $rta = $this->actualizarData(QUERY_SEG::_NTF_ACTUALIZAR, $params, true);
       $observacion = "Usuario ID: " . $params["id"] . ". Identificacion: " . $this->parametros["identificacion"];
-      $this->insertarAuditoria($this->usuarioID, ENUM_AUD::NOTIFICADOR, $observacion, true, "M", ""); //Existe el usuario  
+      $this->insertarAuditoria(ENUM_AUD::NOTIFICADOR, $observacion, true, "M", ""); //Existe el usuario  
     }
     return $rta;
   }

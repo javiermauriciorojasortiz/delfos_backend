@@ -40,12 +40,12 @@ class QUERY_SEG {
       usr_primer_nombre, usr_segundo_nombre, usr_primer_apellido, usr_segundo_apellido, usr_email, usr_telefonos, 
       usr_fecha_auditoria, usr_id_auditoria, usr_intentos, usr_fecha_creacion)
     VALUES (nextval('seg.sequsr'), :estado, :tipoidentificacionid, :identificacion, 
-    :primer_nombre, :segundo_nombre, :primer_apellido, :segundo_apellido, :email, :telefonos,
+    :primer_nombre, :segundo_nombre, :primer_apellido, :segundo_apellido, lower(:email), :telefonos,
       current_timestamp, case when :usuario <=0 then null else :usuario end, 0, current_timestamp) RETURNING usr_id";
   //Actualizar usuario
   public const _USR_ACTUALIZAR = "UPDATE seg.usr_usuario SET eus_id = :estado, tid_id = :tipoidentificacionid,
       usr_identificacion = :identificacion, usr_primer_nombre = :primer_nombre, usr_segundo_nombre = :segundo_nombre, 
-      usr_primer_apellido = :primer_apellido, usr_segundo_apellido = :segundo_apellido, usr_email = :email, 
+      usr_primer_apellido = :primer_apellido, usr_segundo_apellido = :segundo_apellido, usr_email = lower(:email), 
       usr_telefonos = :telefonos, usr_fecha_auditoria = current_timestamp, usr_id_auditoria = :usuario, 
       usr_intentos = 0, usr_fecha_intento = null
     WHERE usr_id =  :id";
@@ -79,10 +79,10 @@ class QUERY_SEG {
     inner join conf.tid_tipo_identificacion t on t.tid_id = u.tid_id
     inner join seg.eus_estado_usuario o on o.eus_id = u.eus_id 
     left join seg.usr_usuario a on a.usr_id = u.usr_id_auditoria
-    where (exists(select 1 from seg.rou_rol_usuario r where r.usr_id = u.usr_id and (r.tus_id = :tipousuario)) or :tipousuario = 0)
+    where (exists(select 1 from seg.rou_rol_usuario r where r.usr_id = u.usr_id and (r.tus_id = :tipousuario)) or coalesce(:tipousuario,0) = 0)
       and (LOWER(u.usr_primer_nombre || u.usr_primer_apellido) like  '%' || coalesce(LOWER(:nombreusuario),'') || '%')
       and (LOWER(u.usr_email) like '%' || coalesce(LOWER(:emailusuario),'') || '%')
-      and DATE(u.usr_fecha_acceso) between coalesce(:fechainiusuario, TO_DATE('20000101', 'YYYYMMDD')) and coalesce(:fechafinusuario, TO_DATE('21000101', 'YYYYMMDD'))
+      and DATE(coalesce(u.usr_fecha_acceso, current_timestamp)) between coalesce(:fechainiusuario, TO_DATE('20000101', 'YYYYMMDD')) and coalesce(:fechafinusuario, TO_DATE('21000101', 'YYYYMMDD'))
       and o.eus_id = coalesce(:estadousuario, o.eus_id) 
       limit 1000";
   //Iniciar sesión temporal

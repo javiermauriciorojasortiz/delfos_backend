@@ -207,7 +207,7 @@ class UsuarioController extends Controller
             if($esregistro) {
                 $params = array("emailidentificacion"=> $params["email"], 
                                 "tipousuario"=> 1,
-                                "metodoautenticacion"=> 2);
+                                "metodoautenticacion"=> 3);
                 $data = $usuario->enviarCorreo($params);
             }
             //TODO: Verificar funcionamiento

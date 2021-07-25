@@ -19,16 +19,16 @@ class Responsable extends APPBASE {
     $params = array("id" => $id, "autoriza_email" =>  $this->parametros["autoriza_email"],
                     "autoriza_sms" => $this->parametros["autoriza_sms"]);
     $rta = null;
-    if($nuevo) {//Insertar
-
+    if($nuevo==1) {//Insertar
+      if($this->usuarioID <= 0) $this->usuarioID = $id;
       $rta =  $this->actualizarData(QUERY_SEG::_RPS_INSERTAR, $params, true);
       $observacion = "Usuario ID: " . $params["id"] . ". Identificacion: " . $this->parametros["identificacion"];
-      $this->insertarAuditoria($this->usuarioID, ENUM_AUD::RESPONSABLE, $observacion, true, "I", ""); //Existe el usuario  
+      $this->insertarAuditoria(ENUM_AUD::RESPONSABLE, $observacion, true, "I", ""); //Existe el usuario  
     } else { //Actualizar
       
       $rta =  $this->actualizarData(QUERY_SEG::_RPS_ACTUALIZAR, $params, true);
       $observacion = "Usuario ID: " . $params["id"] . ". Identificacion: " . $this->parametros["identificacion"];
-      $this->insertarAuditoria($this->usuarioID, ENUM_AUD::RESPONSABLE, $observacion, true, "M", ""); //Existe el usuario  
+      $this->insertarAuditoria(ENUM_AUD::RESPONSABLE, $observacion, true, "M", ""); //Existe el usuario  
     }
     return $rta;
   }

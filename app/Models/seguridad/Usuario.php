@@ -167,7 +167,7 @@ class Usuario extends Core {
         if(Core::$usuarioID<=0) Core::$usuarioID = $rta;
         $observacion = "Usuario ID: " . $rta . ". Identificacion: " . $params["identificacion"];
         $this->insertarAuditoria(Core::$usuarioID,ENUM_AUD::USUARIO, $observacion, true, "I", ""); //Existe el usuario
-                
+        
       } else { //Actualizar
         //throw new Exception(implode("|", array_keys($params)));
          $this->actualizarData(QUERY_SEG::_USR_ACTUALIZAR, $params, true, ["clave","auditoria"]);
