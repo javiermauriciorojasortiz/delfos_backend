@@ -25,4 +25,14 @@ class CasoController extends Controller
     $Caso = new Caso($request, ENUM_OPC::OPCION_GENERAL);
     return $Caso->listarEstadosPaciente(); 
   }
+  //Establecer paciente
+  function establecerPaciente(Request $request){
+    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
+    return $Caso->establecerPaciente(); 
+  }
+  //Obtener caso por id
+  function obtenerCasoPorID(Request $request){
+    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
+    return $Caso->obtenerPorID(); 
+  }
 }

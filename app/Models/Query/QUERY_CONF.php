@@ -4,7 +4,18 @@ namespace App\Models\Query;
 
 //Clase de lista querys de configuración
 class QUERY_CONF {
-
+  //Listar paises
+  public const _PAI_LISTAR = "SELECT pai_id id, pai_codigo codigo, pai_nombre nombre from conf.pai_pais order by 3";
+  //Listar municipio
+  public const _MNC_LISTAR = "SELECT mnc_id id, mnc_codigo codigo, mnc_nombre nombre from conf.mnc_municipio 
+    where dvp_id = :divipolaid order by 3";
+  //Listar zonas
+  public const _ZNA_LISTAR = "SELECT zna_id id, zna_codigo codigo, zna_nombre nombre from conf.zna_zona 
+    where mnc_id = :municipioid order by 3";
+  //Listar barrio
+  public const _BRR_LISTAR = "SELECT brr_id id, brr_codigo codigo, brr_nombre nombre 
+    from conf.brr_barrio b inner join conf.zna_zona z on z.zna_id = b.zna_id where mnc_id = :municipioid order by 3";
+  //Consultar lista de tipos de operación
   public const _TID_CONSULTAR = "SELECT tid_id id, tid_codigo codigo, tid_nombre nombre FROM conf.tid_tipo_identificacion 
     WHERE tid_paciente = coalesce(:paciente, tid_paciente) AND tid_nacional = coalesce(:nacional, tid_nacional)";
   //Consultar catalogos 

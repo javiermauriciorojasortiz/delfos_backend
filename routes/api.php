@@ -74,7 +74,6 @@ Route::post('establecerparametro', [ParametroController::class, 'establecerParam
 Route::get('obtenerparametroporcodigo', [ParametroController::class, 'obtenerParametroporCodigo']);
 //Divipola
 Route::post('consultardivipolas', [DivipolaController::class, 'consultarDivipolas']);
-Route::get('listardivipolas', [DivipolaController::class, 'listarDivipolas']);
 Route::get('eliminardivipola', [DivipolaController::class, 'eliminarDivipola']);
 Route::post('establecerdivipola', [DivipolaController::class, 'establecerDivipola']);
 Route::get('obtenermunicipiosporiddivipola', [DivipolaController::class, 'obtenerMunicipiosporIDDivipola']);
@@ -87,6 +86,11 @@ Route::get('obtenerbarriosporidzona', [DivipolaController::class, 'obtenerBarrio
 Route::get('eliminarbarrio', [DivipolaController::class, 'eliminarBarrio']);
 Route::post('establecerbarrio', [DivipolaController::class, 'establecerBarrio']);
 Route::get('obtenersecretarias', [DivipolaController::class, 'obtenerSecretarias']);
+Route::get('listarpaises', [DivipolaController::class, 'listarPaises']);
+Route::get('listardivipolas', [DivipolaController::class, 'listarDivipolas']);
+Route::get('listarmunicipios', [DivipolaController::class, 'listarMunicipios']);
+Route::get('listarzonas', [DivipolaController::class, 'listarZonas']);
+Route::get('listarbarrios', [DivipolaController::class, 'listarBarrios']);
 //EAPB
 Route::post('consultareapbs', [EAPBController::class, 'consultarEAPBs']);
 Route::post('establecereapb', [EAPBController::class, 'establecerEAPB']);
@@ -103,3 +107,5 @@ Route::get('obtenercontactoporid', [ContactoController::class, 'obtenerContactoP
 Route::get('consultarcasoporidentificacion', [CasoController::class, 'ConsultarPorIdentificacion']);
 Route::get('consultarcasoporresponsable', [CasoController::class, 'ConsultarPorResponsableID']);
 Route::get('listarestadospaciente', [CasoController::class, 'listarEstadosPaciente']);
+Route::post('establecerpaciente', [CasoController::class, 'establecerPaciente']);
+Route::get('obtenercasoporid', [CasoController::class, 'obtenerCasoPorID']);

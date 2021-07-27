@@ -44,5 +44,21 @@ class Caso extends APPBASE {
 	function listarEstadosPaciente() {
 		return $this->obtenerResultset(QUERY_OPER::_ESP_LISTAR);
 	}
-
+	//Establecer  paciente
+	function establecerPaciente(){
+		$rta = null;
+		if($this->parametros["id"]==0 ){
+			$rta = $this->obtenerRegistro(QUERY_OPER::_CSO_INSERTAR, $this->listarParamRequeridos(["id","activo"]), true)->cso_id;
+			$Descripcion = "Paciente ID: " . $rta . " . Identificacion: ". $this->parametros["identificacion"] . 
+										 "Nombre: ". $this->parametros["primer_nombre"] . " " . $this->parametros["primer_apellido"] ;
+			$this->insertarAuditoria(ENUM_AUD::CASO, $Descripcion, true, 'I');	
+		} else {
+			$rta = $this->parametros["id"];
+			$this->actualizarData(QUERY_OPER::_CSO_ACTUALIZAR, $this->listarParamRequeridos(["activo"]), true);
+			$Descripcion = "Paciente ID: " . $rta . " . Identificacion: ". $this->parametros["identificacion"] . 
+										 "Nombre: ". $this->parametros["primer_nombre"] . " " . $this->parametros["primer_apellido"] ;
+			$this->insertarAuditoria(ENUM_AUD::CASO, $Descripcion, true, 'M');		
+		}
+		return $rta;
+	}
 }

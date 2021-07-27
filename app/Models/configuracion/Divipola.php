@@ -16,6 +16,22 @@ class Divipola extends Core{
   function __construct(Request $request, int $opcion) {
     parent::__construct($request, $opcion);
   }
+  //listar paises sin control de acceso
+  function listarPaises(){
+    return $this->obtenerResultset(QUERY_CONF::_PAI_LISTAR);
+  }
+  //listar paises sin control de acceso
+  function listarMunicipios(){
+    return $this->obtenerResultset(QUERY_CONF::_MNC_LISTAR);
+  }
+  //listar paises sin control de acceso
+  function listarZonas(){
+    return $this->obtenerResultset(QUERY_CONF::_ZNA_LISTAR);
+  }
+  //listar paises sin control de acceso
+  function listarBarrios(){
+    return $this->obtenerResultset(QUERY_CONF::_BRR_LISTAR);
+  }
   //Consulta de lista de divipolas
   function consultarDivipolas() {
     $rta = $this->obtenerResultset(QUERY_CONF::_DVP_CONSULTAR);

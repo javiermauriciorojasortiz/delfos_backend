@@ -61,4 +61,17 @@ class QUERY_OPER {
   public const _ESP_LISTAR = "SELECT esp_id id, esp_nombre nombre, vlc_id_nivel_riesgo nivelriesgoid, vlc_nombre nivelriesgo,
     vlc_codigo codigo FROM oper.esp_estado_paciente e inner join conf.vlc_valor_catalogo v on v.vlc_id = e.vlc_id_nivel_riesgo 
     order by 2";
+  //Insertar caso
+  public const _CSO_INSERTAR = "INSERT INTO oper.cso_caso(cso_id, tid_id, cso_identificacion, cso_primer_nombre, cso_segundo_nombre, cso_primer_apellido, 
+      cso_segundo_apellido, cso_fecha_nacido, cso_semana, pai_id, cso_divipol, mnc_id, cso_barrio, brr_id, cso_direccion, 
+      eap_id, cso_fecha_auditoria, usr_id_auditoria, cso_nacido, cso_activo)
+    VALUES (nextval('conf.seqcso'), :tipoidentificacionid, :identificacion, :primer_nombre, :segundo_nombre, :primer_apellido,	
+      :segundo_apellido, :fecha_nacido, :semana, :paisid, :divipol, :municipioid, :barrio, :barrioid, :direccion,
+      :eapbid, current_timestamp, :usuario, :nacido, true) RETURNING cso_id;";
+  //Actualizar caso general
+  public const _CSO_ACTUALIZAR = "UPDATE oper.cso_caso SET tid_id=:tipoidentificacionid, cso_identificacion=:identificacion, cso_primer_nombre=:primer_nombre, 
+    cso_segundo_nombre=:segundo_nombre, cso_primer_apellido=:primer_apellido, cso_segundo_apellido=:segundo_apellido,
+    cso_fecha_nacido=:fecha_nacido, cso_semana=:semana,	pai_id=:paisid,	cso_divipol=:divipol, mnc_id=:municipioid, 
+    cso_barrio=:barrio, brr_id=:barrioid, cso_direccion=:direccion,	eap_id=:eapbid, cso_fecha_auditoria= current_timestamp,
+    usr_id_auditoria=:usuario, cso_nacido=:nacido where cso_id=:id";
 }
