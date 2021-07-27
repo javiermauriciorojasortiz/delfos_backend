@@ -33,6 +33,6 @@ class CasoController extends Controller
   //Obtener caso por id
   function obtenerCasoPorID(Request $request){
     $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
-    return $Caso->obtenerPorID(); 
+    return json_encode($Caso->obtenerPorID()); 
   }
 }

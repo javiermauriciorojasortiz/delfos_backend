@@ -16,7 +16,8 @@ class QUERY_CONF {
   public const _BRR_LISTAR = "SELECT brr_id id, brr_codigo codigo, brr_nombre nombre 
     from conf.brr_barrio b inner join conf.zna_zona z on z.zna_id = b.zna_id where mnc_id = :municipioid order by 3";
   //Consultar lista de tipos de operación
-  public const _TID_CONSULTAR = "SELECT tid_id id, tid_codigo codigo, tid_nombre nombre FROM conf.tid_tipo_identificacion 
+  public const _TID_CONSULTAR = "SELECT tid_id id, tid_codigo codigo, tid_nombre nombre, tid_paciente paciente, 
+    tid_nacional nacional FROM conf.tid_tipo_identificacion 
     WHERE tid_paciente = coalesce(:paciente, tid_paciente) AND tid_nacional = coalesce(:nacional, tid_nacional)";
   //Consultar catalogos 
   public const _CAT_CONSULTAR = "SELECT cat_id id, cat_codigo codigo, cat_nombre nombre, cat_descripcion descripcion,

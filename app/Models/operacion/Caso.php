@@ -27,7 +27,7 @@ class Caso extends APPBASE {
 	//Obtener caso por id
 	function ObtenerPorID() {
 		$params = $this->listarParamRequeridos();
-		$rta = $this->db->obtenerRegistro(QUERY_OPER::_CSO_OBTENERXID, $params);
+		$rta = $this->obtenerRegistro(QUERY_OPER::_CSO_OBTENERXID, $params);
 		$Descripcion = "Consultar Caso ". $rta->identificacion .
 									 ". Nombre " . $rta->primer_nombre . ' ' . $rta->primer_apellido;
 		$this->insertarAuditoria(ENUM_AUD::CASO, $Descripcion, true, 'C');	
