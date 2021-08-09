@@ -61,4 +61,9 @@ class Caso extends APPBASE {
 		}
 		return $rta;
 	}
+	//Listar históricos paciente
+	function listarHistoricoPaciente(){
+		$rta = $this->obtenerResultset(QUERY_OPER::_CSOH_LISTAR);
+		return $rta;
+	}
 }

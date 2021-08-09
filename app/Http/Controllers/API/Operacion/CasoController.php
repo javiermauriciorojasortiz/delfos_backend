@@ -35,4 +35,9 @@ class CasoController extends Controller
     $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
     return json_encode($Caso->obtenerPorID()); 
   }
+  //Obtener caso por id
+  function listarHistoricoPaciente(Request $request){
+    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
+    return $Caso->listarHistoricoPaciente(); 
+  }
 }

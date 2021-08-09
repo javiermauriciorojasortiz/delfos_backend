@@ -75,4 +75,53 @@ class QUERY_OPER {
     cso_barrio=:barrio, brr_id=:barrioid, cso_direccion=:direccion,	eap_id=:eapbid, cso_fecha_auditoria = current_timestamp,
     dvp_id = :departamentoid, cso_municipio = :municipio,
     usr_id_auditoria=:usuario, cso_nacido=:nacido where cso_id=:id";
+  //Insertar diagnostico
+  public const _DGN_INSERTAR = "INSERT into oper.dgn_diagnostico (dgn_id, ntf_id, vlc_id_tipo_defecto,
+    vlc_id_cardiopatia, vlc_id_tipo_defecto_otro, vlc_id_diagnostico_principal, vlc_id_diagnostico_secundario,
+    dgn_fecha, dgn_fecha_auditoria, usr_id_auditoria) 
+    VALUES(nextval('oper.seqdgn'),:notificadorid, :tipodefectoid,:cardiopatiaid,:tipodefectootroid,:diagnosticoprincipalid,
+      :diagnosticosecundarioid, :fecha, current_timestamp, :usuario) RETURNING dng_id;";
+  //Actualizar diagnostico
+  public const _DGN_ACTUALIZAR = "UPDATE oper.dgn_diagnostico SET 
+    ntf_id=:notificadorid, vlc_id_tipo_defecto=:tipodefectoid, vlc_id_cardiopatia=:cardiopatiaid,
+    vlc_id_tipo_defecto_otro=:tipodefectootroid, vlc_id_diagnostico_principal=:diagnosticoprincipalid,
+    vlc_id_diagnostico_secundario=:diagnosticosecundarioid, dgn_fecha=fecha,
+    usr_id_auditoria=:usuario WHERE dgn_id=:id";
+  //Insertar seguimiento
+  public const _SGM_INSERTAR = "INSERT into oper.sgm_seguimiento (sgm_id,cso_id,ntf_id,pxe_id_origen,
+    vlc_id_tipo_atencion,sgm_fecha,mnc_id,upu_id,sgm_situacion, dgn_id, usr_id_creacion) 
+    VALUES (nextval('oper.seqsgm'),:casoid,:notificadorid,
+    :proximaevaluacionid,:tipoatencionid,current_timestamp,:municipioid,:upgduiid,:situacion, :usuario) RETURNING sgm_id;";
+  //Actualizar seguimiento
+  public const _SGM_ACTUALIZAR_VALORACION = "UPDATE oper.sgm_seguimiento SET vlc_id_nivel_satisfaccion=:nivelsatisfaccionid,
+    sgm_desc_valoracion=:descvaloracion, rps_id_valoracion=:idvaloracion WHERE sgm_id=:id";
+  //Lista de seguimientos caso
+  public const _SGM_LISTARXCASO = "SELECT sgm_id id, usr_primer_nombre || ' ' || usr_primer_apellido doctor,
+    sgm_fecha fecha, t.vlc_nombre tipoatencion, d.vlc_nombre diagnostico, e.esp_nombre estado
+    from oper.sgm_seguimiento s
+    inner join seg.usr_usuario u on u.usr_id = s.ntf_id
+    inner join conf.vlc_valor_catalogo t on t.vlc_id = s.vlc_id_tipo_atencion
+    inner join oper.dgn_diagnostico dgn on dgn.dgn_id = s.dgn_id
+    inner join oper.esp_estado_paciente e on e.esp_id = dgn.esp_id
+    inner join conf.vlc_valor_catalogo d on t.vlc_id = dgn.vlc_id_diagnostico_principal where cso_id = :casoid";
+  //Consultar caso histórico 
+  public const _CSOH_LISTAR = "SELECT cso.csoh_id id, tid_codigo || ' ' || cso_identificacion identificacion, 
+    cso_primer_nombre || ' ' || coalesce(cso_primer_apellido, '') nombre,
+    CASE WHEN NOT cso_nacido then 'No nacido' 
+        ELSE (DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido)) || ' Meses' END edad,
+      csoh_fecha fecha
+    FROM oper.csoh_caso_hst cso INNER JOIN conf.tid_tipo_identificacion tid ON tid.tid_id = cso.tid_id
+      WHERE cso.cso_id = :casoid";
+  //Consultar solicitudes atención caso
+  public const _ATP_LISTARXCASO = "SELECT atp_id id, vlcta.vlc_nombre tipoayuda, atp_descripcion descripcion, 
+      atp_fecha fecha, atp_fecha_confirmacion confirmada, vlcns.vlc_nombre nivelsatisfaccion
+      FROM oper.atp_atencion_pendiente atp
+    INNER JOIN conf.vlc_valor_catalogo vlcta on vlcta.vlc_id = atp.vlc_id_tipo_ayuda 
+    INNER JOIN conf.vlc_valor_catalogo vlcns on vlcns.vlc_id = atp.vlc_id_nivel_satisfaccion 
+        WHERE cso_id = :casoid";
+  //Insertar Solicitud Atención
+  public const _ATP_CREAR = "INSERT INTO oper.atp_atencion_pendiente(atp_id, cso_id, rsp_id, atp_fecha, 
+    atp_descripcion, vlc_id_tipo_ayuda) VALUES (nextval('oper.seqatp'), :casoid, :usuario, current_timestamp, 
+    :descripcion, :tipoayudaid) RETURNING atp_id";
+
 }

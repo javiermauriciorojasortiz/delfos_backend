@@ -10,6 +10,8 @@ use App\Http\Controllers\API\Seguridad\UsuarioController;
 use App\Http\Controllers\API\Configuracion\UPGDUIController;
 use App\Http\Controllers\API\Operacion\CasoController;
 use App\Http\Controllers\API\Operacion\ContactoController;
+use App\Http\Controllers\API\Operacion\SeguimientoController;
+use App\Http\Controllers\API\Operacion\SolicitudAyudaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -109,3 +111,9 @@ Route::get('consultarcasoporresponsable', [CasoController::class, 'ConsultarPorR
 Route::get('listarestadospaciente', [CasoController::class, 'listarEstadosPaciente']);
 Route::post('establecerpaciente', [CasoController::class, 'establecerPaciente']);
 Route::get('obtenercasoporid', [CasoController::class, 'obtenerCasoPorID']);
+Route::get('listarhistoricopaciente', [CasoController::class, 'listarHistoricoPaciente']);
+//Seguimiento
+Route::get('listarseguimientosporcaso', [SeguimientoController::class, 'listarPorCaso']);
+//Solicitud ayuda
+Route::get('listarsolicitudesporcaso', [SolicitudAyudaController::class, 'listarPorCaso']);
+Route::post('crearsolicitudatencion', [SolicitudAyudaController::class, 'crearSolicitudAyuda']);
