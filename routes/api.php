@@ -12,6 +12,7 @@ use App\Http\Controllers\API\Operacion\CasoController;
 use App\Http\Controllers\API\Operacion\ContactoController;
 use App\Http\Controllers\API\Operacion\SeguimientoController;
 use App\Http\Controllers\API\Operacion\SolicitudAyudaController;
+use App\Http\Controllers\API\Operacion\TareaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -117,3 +118,8 @@ Route::get('listarseguimientosporcaso', [SeguimientoController::class, 'listarPo
 //Solicitud ayuda
 Route::get('listarsolicitudesporcaso', [SolicitudAyudaController::class, 'listarPorCaso']);
 Route::post('crearsolicitudatencion', [SolicitudAyudaController::class, 'crearSolicitudAyuda']);
+Route::get('obtenersolicitudporid', [SolicitudAyudaController::class, 'obtenerSolicitudPorID']);
+Route::post('guardaratencionsolicitud', [SolicitudAyudaController::class, 'guardarAtencionSolicitud']);
+Route::post('confirmartencionsolicitud', [SolicitudAyudaController::class, 'confirmarAtencionSolicitud']);
+//Tareas
+Route::get('listartareas', [TareaController::class, 'listarTareas']);

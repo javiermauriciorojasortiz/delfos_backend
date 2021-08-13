@@ -114,14 +114,68 @@ class QUERY_OPER {
       WHERE cso.cso_id = :casoid";
   //Consultar solicitudes atención caso
   public const _ATP_LISTARXCASO = "SELECT atp_id id, vlcta.vlc_nombre tipoayuda, atp_descripcion descripcion, 
-      atp_fecha fecha, atp_fecha_confirmacion confirmada, vlcns.vlc_nombre nivelsatisfaccion
-      FROM oper.atp_atencion_pendiente atp
-    INNER JOIN conf.vlc_valor_catalogo vlcta on vlcta.vlc_id = atp.vlc_id_tipo_ayuda 
-    INNER JOIN conf.vlc_valor_catalogo vlcns on vlcns.vlc_id = atp.vlc_id_nivel_satisfaccion 
-        WHERE cso_id = :casoid";
+        atp_fecha fecha, atp_fecha_confirmacion confirmada, vlcns.vlc_nombre nivelsatisfaccion
+        FROM oper.atp_atencion_pendiente atp
+      INNER JOIN conf.vlc_valor_catalogo vlcta on vlcta.vlc_id = atp.vlc_id_tipo_ayuda 
+      LEFT JOIN conf.vlc_valor_catalogo vlcns on vlcns.vlc_id = atp.vlc_id_nivel_satisfaccion 
+          WHERE cso_id = :casoid";
   //Insertar Solicitud Atención
   public const _ATP_CREAR = "INSERT INTO oper.atp_atencion_pendiente(atp_id, cso_id, rsp_id, atp_fecha, 
-    atp_descripcion, vlc_id_tipo_ayuda) VALUES (nextval('oper.seqatp'), :casoid, :usuario, current_timestamp, 
-    :descripcion, :tipoayudaid) RETURNING atp_id";
-
+      atp_descripcion, vlc_id_tipo_ayuda) VALUES (nextval('oper.seqatp'), :casoid, :usuario, current_timestamp, 
+      :descripcion, :tipoayudaid) RETURNING atp_id";
+  //Insertar atención por parte de la EAPB
+  public const _ATP_ESTABLECERATENCION = "UPDATE oper.atp_atencion_pendiente SET 
+    usr_id_eapb=:usuario, atp_fecha_eapb=:fechaeapb, atp_observacion_eapb=:observacioneapb,
+    eap_id = :eapbid, upu_id = :upgduiid, vlc_id_solucion_atencion=:solucionatencionid, 
+    atp_fecha_eapb_auditoria = current_timestamp
+   WHERE atp_id = :id";
+  //Establecer confirmación de la atención recibida
+  public const _ATP_ESTABLECERCONFIRMACION = "UPDATE oper.atp_atencion_pendiente SET 
+    usr_id_confirmacion=:usuario, atp_fecha_confirmacion=current_timestamp,
+    atp_observacion_confirmacion=:observacionconfirmacion, vlc_id_nivel_satisfaccion=:nivelsatisfaccionid
+    WHERE atp_id = :id";
+  //Listar tareas pendientes
+  public const _TAR_LISTAR = "SELECT atp_id id, vtipo.vlc_id tipotareaid, vtipo.vlc_nombre tipotarea, vlc.vlc_codigo alarma, 'Paciente' atenciona, 
+    tid_codigo || '-' || cso_identificacion || ' ' || cso_primer_nombre || coalesce(' '  || cso_primer_apellido,'') dirigidoa,
+    atp.atp_fecha fecha, dgn.esp_id estadopacienteid, vlc_id_nivel_riesgo nivelriesgoid, vlc.vlc_id alarmaid
+    FROM oper.atp_atencion_pendiente atp
+    inner join oper.cso_caso cso on cso.cso_id = atp.cso_id
+    inner join conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
+    inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = 45 and vlc.cat_id = 13
+    inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 51 and vtipo.cat_id = 14
+    inner join seg.rou_rol_usuario rou on rou.tus_id = 6 and rou_entidadid = cso.eap_id
+    left join oper.dgn_diagnostico dgn on dgn.dgn_id = cso.dgn_id
+    left join oper.esp_estado_paciente esp on esp.esp_id = dgn.esp_id
+    where atp_fecha_eapb is null and rou.usr_id = :usuario
+    union all
+    SELECT atp_id id, vtipo.vlc_id tipotareaid, vtipo.vlc_nombre tipotarea, vlc.vlc_codigo alarma, 'Paciente' atenciona, 
+      tid_codigo || '-' || cso_identificacion || ' ' || cso_primer_nombre || coalesce(' '  || cso_primer_apellido,'') dirigidoa,
+      atp.atp_fecha fecha, dgn.esp_id estadopacienteid, vlc_id_nivel_riesgo nivelriesgoid, vlc.vlc_id alarmaid
+      FROM oper.atp_atencion_pendiente atp
+      inner join oper.cso_caso cso on cso.cso_id = atp.cso_id
+      inner join conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
+      inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = 45 and vlc.cat_id = 13
+      inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 52 and vtipo.cat_id = 14
+      inner join oper.rpc_responsable_caso rpc on rpc.cso_id = cso.cso_id
+      left join oper.dgn_diagnostico dgn on dgn.dgn_id = cso.dgn_id
+      left join oper.esp_estado_paciente esp on esp.esp_id = dgn.esp_id
+      where (not atp_fecha_eapb is null) and atp_fecha_confirmacion is null and rpc_activo = true and rpc.rps_id = :usuario
+    order by 7 asc";
+  //Obtener solicitud atención por id
+  public const _ATP_OBTENERXID = "SELECT atp_id id, c.cso_id casoid, rsp_id responsableid, atp_fecha fecha, atp_descripcion descripcion,
+    usr_id_eapb usuarioeapbid, atp_fecha_eapb fechaeapb, atp_observacion_eapb observacioneapb,
+    usr_id_confirmacion usuarioconfirmacionid, atp_fecha_confirmacion fechaconfirmacion,
+    atp_observacion_confirmacion observacionconfirmacion, vlc_id_tipo_ayuda tipoayudaid,
+    vlc_id_nivel_satisfaccion nivelsatisfaccionid, vlc_id_solucion_atencion solucionatencionid,
+    e.eap_id eapbid, eap_nombre eapb, upu.upu_id upgdid, upu_nombre upgdui,
+    rsp.usr_primer_nombre || ' ' || rsp.usr_primer_apellido || ' ' || to_char(atp_fecha, 'YYYY-MM-DD HH:MI:SSPM') auditoria,
+    ueapb.usr_primer_nombre || ' ' || ueapb.usr_primer_apellido || ' ' || to_char(atp_fecha_eapb_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoriaatencion,
+    ucon.usr_primer_nombre || ' ' || ucon.usr_primer_apellido || ' ' || to_char(atp_fecha_confirmacion, 'YYYY-MM-DD HH:MI:SSPM') auditoriaconfirmacion
+    FROM oper.atp_atencion_pendiente a inner join oper.cso_caso c on c.cso_id = a.cso_id
+    inner join conf.eap_eapb e on e.eap_id = coalesce(a.eap_id, c.eap_id)
+    inner join seg.usr_usuario rsp on rsp.usr_id = a.rsp_id
+    left join seg.usr_usuario ueapb on ueapb.usr_id = a.usr_id_eapb
+    left join seg.usr_usuario ucon on ucon.usr_id = a.usr_id_confirmacion
+    left join conf.upu_upgd_ui upu on upu.upu_id = a.upu_id
+    WHERE atp_id = :id";
 }

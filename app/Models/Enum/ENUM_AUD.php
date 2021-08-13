@@ -21,4 +21,5 @@ class ENUM_AUD {
 	public const ZONA = 15;
   public const CASO = 16;
 	public const PARTICIPANTE = 17;
+	public const TAREA = 18;
 }
