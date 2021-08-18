@@ -40,4 +40,9 @@ class CasoController extends Controller
     $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
     return $Caso->listarHistoricoPaciente(); 
   }
+  //Obtener responsables del caso 
+  function obtenerResponsablesxCaso(Request $request){
+    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
+    return $Caso->obtenerResponsablesxCaso();
+  }
 }

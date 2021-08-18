@@ -66,4 +66,15 @@ class Caso extends APPBASE {
 		$rta = $this->obtenerResultset(QUERY_OPER::_CSOH_LISTAR);
 		return $rta;
 	}
+	//Obtener la lista de responsables del caso
+	function obtenerResponsablesxCaso(){
+		$rta = $this->obtenerResultset(QUERY_OPER::_CSO_LISTARRESPONSABLES);
+		return $rta;		
+	}
+	//Actualizar seguimiento
+	function actualizarUltimoSeguimiento($seguimientoid, $casoid){
+		$rta = $this->actualizarData(QUERY_OPER::_CSO_ACTUALIZAR_ULTIMO_SEGUIMIENTO, 
+			array("seguimientoid"=> $seguimientoid, "casoid"=>$casoid));
+		return $rta;		
+	}
 }

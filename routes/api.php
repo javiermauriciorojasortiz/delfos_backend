@@ -10,6 +10,7 @@ use App\Http\Controllers\API\Seguridad\UsuarioController;
 use App\Http\Controllers\API\Configuracion\UPGDUIController;
 use App\Http\Controllers\API\Operacion\CasoController;
 use App\Http\Controllers\API\Operacion\ContactoController;
+use App\Http\Controllers\API\Operacion\ReporteController;
 use App\Http\Controllers\API\Operacion\SeguimientoController;
 use App\Http\Controllers\API\Operacion\SolicitudAyudaController;
 use App\Http\Controllers\API\Operacion\TareaController;
@@ -113,8 +114,11 @@ Route::get('listarestadospaciente', [CasoController::class, 'listarEstadosPacien
 Route::post('establecerpaciente', [CasoController::class, 'establecerPaciente']);
 Route::get('obtenercasoporid', [CasoController::class, 'obtenerCasoPorID']);
 Route::get('listarhistoricopaciente', [CasoController::class, 'listarHistoricoPaciente']);
+Route::get('obtenerresponsablesxcaso', [CasoController::class, 'obtenerResponsablesxCaso']);
 //Seguimiento
 Route::get('listarseguimientosporcaso', [SeguimientoController::class, 'listarPorCaso']);
+Route::post('establecerseguimiento', [SeguimientoController::class, 'establecerSeguimiento']);
+Route::get('obtenerdiagnosticoporid',  [SeguimientoController::class, 'obtenerDiagnosticoPorID']);
 //Solicitud ayuda
 Route::get('listarsolicitudesporcaso', [SolicitudAyudaController::class, 'listarPorCaso']);
 Route::post('crearsolicitudatencion', [SolicitudAyudaController::class, 'crearSolicitudAyuda']);
@@ -123,3 +127,10 @@ Route::post('guardaratencionsolicitud', [SolicitudAyudaController::class, 'guard
 Route::post('confirmartencionsolicitud', [SolicitudAyudaController::class, 'confirmarAtencionSolicitud']);
 //Tareas
 Route::get('listartareas', [TareaController::class, 'listarTareas']);
+//Reportes
+Route::post('consultarcasosinteres', [ReporteController::class, 'consultarCasosInteres']);
+Route::post('consultarreportegerencial', [ReporteController::class, 'consultarReporteGerencial']);
+Route::post('consultarreportegeografico', [ReporteController::class, 'consultarReporteGeografico']);
+Route::get('consultarcasosporeapb', [ReporteController::class, 'consultarCasosPorEAPB']);
+Route::post('consultarcasosporestado', [ReporteController::class, 'consultarCasosPorEstado']);
+Route::post('consultarestadoalertacasos', [ReporteController::class, 'consultarEstadoAlertaCasos']);
