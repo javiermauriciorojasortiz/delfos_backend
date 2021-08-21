@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class SolicitudAyudaController extends Controller {
   //Consulta lista de seguimientos por caso
   function listarPorCaso(Request $request){
-    $Sol = new SolicitudAyuda($request, ENUM_OPC::CONSULTAR_CASO);
+    $Sol = new SolicitudAyuda($request, ENUM_OPC::OPCION_GENERAL);
     return $Sol->listarPorCaso();
   }
   //Crear solicitud de ayuda

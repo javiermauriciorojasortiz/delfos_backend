@@ -9,6 +9,7 @@ use App\Http\Controllers\API\Seguridad\AuditoriaController;
 use App\Http\Controllers\API\Seguridad\UsuarioController;
 use App\Http\Controllers\API\Configuracion\UPGDUIController;
 use App\Http\Controllers\API\Operacion\CasoController;
+use App\Http\Controllers\API\Operacion\ComunicacionController;
 use App\Http\Controllers\API\Operacion\ContactoController;
 use App\Http\Controllers\API\Operacion\ReporteController;
 use App\Http\Controllers\API\Operacion\SeguimientoController;
@@ -56,6 +57,7 @@ Route::post('establecernotificador', [UsuarioController::class, 'establecerNotif
 Route::post('establecerresponsable', [UsuarioController::class, 'establecerResponsable']);
 Route::get('obtenernotificador', [UsuarioController::class, 'obtenerNotificador']);
 Route::get('obtenerresponsable', [UsuarioController::class, 'obtenerResponsable']);
+Route::get('obtenerresponsableporidentificacion', [UsuarioController::class, 'obtenerResponsablePorIdentificacion']);
 Route::get('autenticarporsesiontemporal', [UsuarioController::class, 'autenticarPorSesionTemporal']);
 Route::post('consultarparticipantes', [UsuarioController::class, 'consultarParticipantes']);
 //Auditoría
@@ -134,3 +136,6 @@ Route::post('consultarreportegeografico', [ReporteController::class, 'consultarR
 Route::get('consultarcasosporeapb', [ReporteController::class, 'consultarCasosPorEAPB']);
 Route::post('consultarcasosporestado', [ReporteController::class, 'consultarCasosPorEstado']);
 Route::post('consultarestadoalertacasos', [ReporteController::class, 'consultarEstadoAlertaCasos']);
+//Comunicaciones
+Route::post('enviarcorreoscomunicaciones', [ComunicacionController::class, 'enviarCorreos']);
+Route::post('enviarsmsscomunicaciones', [ComunicacionController::class, 'enviarSMSs']);

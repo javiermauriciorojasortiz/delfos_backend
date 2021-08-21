@@ -24,14 +24,18 @@ class QUERY_OPER {
     pai_id paisid, cso_divipol departamento, cso.dvp_id deptoid, mnc.mnc_id municipioid, cso_municipio municipio,
     cso_barrio barrio, brr_id barrioid, cso_direccion direccion, eap_id eapbid, 
     case when not cso_fecha_nacido is null then 1 else 0 end nacido,
-    sgm_id_ultimo seguimientoid, dgn_id diagnosticoid,
+    sgm_id_ultimo seguimientoid, dgn_id diagnosticoid, cso_latitud lat, cso_longitud lng,
     usr.usr_primer_nombre || ' ' || usr.usr_primer_apellido || '-' 
                           || to_char(cso.cso_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM')  auditoria,
-    cso_activo activo, vlc_id_causal_inactivo causal_inactivo 
+    cso_activo activo, vlc_id_causal_inactivo causal_inactivo,
+    rpsp.rps_id responsableprincipalid, rpsp.vlc_id_tipo_relacion tiporelacionprincipalid,
+    rpss.rps_id responsablesecundarioid, rpss.vlc_id_tipo_relacion tiporelacionsecundarioid
     FROM oper.cso_caso cso
     LEFT JOIN oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
     LEFT JOIN conf.mnc_municipio mnc on mnc.mnc_id = cso.mnc_id
     LEFT JOIN seg.usr_usuario usr on usr.usr_id = cso.usr_id_auditoria
+    LEFT JOIN oper.rpc_responsable_caso rpsp on rpsp.cso_id = cso.cso_id and rpsp.rpc_principal = true
+    LEFT JOIN oper.rpc_responsable_caso rpss on rpss.cso_id = cso.cso_id and rpss.rpc_principal = false
     where cso.cso_id = :id";
   //Actualizar seguimiento en caso
   public const _CSO_ACTUALIZAR_ULTIMO_SEGUIMIENTO = "UPDATE oper.cso_caso SET sgm_id_ultimo=:seguimientoid WHERE cso_id=:casoid"; 
@@ -66,17 +70,17 @@ class QUERY_OPER {
   //Insertar caso
   public const _CSO_INSERTAR = "INSERT INTO oper.cso_caso(cso_id, tid_id, cso_identificacion, cso_primer_nombre, cso_segundo_nombre, cso_primer_apellido, 
       cso_segundo_apellido, cso_fecha_nacido, cso_semana, pai_id, cso_divipol, dvp_id, mnc_id, cso_barrio, brr_id, cso_direccion, 
-      eap_id, cso_fecha_auditoria, usr_id_auditoria, cso_nacido, cso_activo, cso_municipio)
+      eap_id, cso_fecha_auditoria, usr_id_auditoria, cso_nacido, cso_activo, cso_municipio, cso_longitud, cso_latitud)
     VALUES (nextval('oper.seqcso'), :tipoidentificacionid, :identificacion, :primer_nombre, :segundo_nombre, :primer_apellido,	
       :segundo_apellido, :fecha_nacido, :semana, :paisid, :departamento, :departamentoid, :municipioid, :barrio, :barrioid, :direccion,
-      :eapbid, current_timestamp, :usuario, :nacido, true, :municipio) RETURNING cso_id;";
+      :eapbid, current_timestamp, :usuario, :nacido, true, :municipio, :lng, :lan) RETURNING cso_id;";
   //Actualizar caso general
   public const _CSO_ACTUALIZAR = "UPDATE oper.cso_caso SET tid_id=:tipoidentificacionid, cso_identificacion=:identificacion, cso_primer_nombre=:primer_nombre, 
     cso_segundo_nombre=:segundo_nombre, cso_primer_apellido=:primer_apellido, cso_segundo_apellido=:segundo_apellido,
     cso_fecha_nacido=:fecha_nacido, cso_semana=:semana,	pai_id=:paisid,	cso_divipol=:departamento, mnc_id=:municipioid, 
     cso_barrio=:barrio, brr_id=:barrioid, cso_direccion=:direccion,	eap_id=:eapbid, cso_fecha_auditoria = current_timestamp,
     dvp_id = :departamentoid, cso_municipio = :municipio,
-    usr_id_auditoria=:usuario, cso_nacido=:nacido where cso_id=:id";
+    usr_id_auditoria=:usuario, cso_nacido=:nacido, cso_latitud=:lan, cso_longitud=:lng where cso_id=:id";
   //Insertar diagnostico
   public const _DGN_INSERTAR = "INSERT into oper.dgn_diagnostico (dgn_id, vlc_id_tipo_defecto,
     vlc_id_cardiopatia, vlc_id_tipo_defecto_otro, vlc_id_diagnostico_principal, vlc_id_diagnostico_secundario,
@@ -201,6 +205,12 @@ class QUERY_OPER {
   public const _RPC_INSERTAR = "INSERT INTO oper.rpc_responsable_caso(
     cso_id, rps_id, rpc_fecha_auditoria, usr_id_auditoria, vlc_id_tipo_relacion, rpc_principal, rpc_activo)
     VALUES (:casoid, :responsableid, current_timestamp, :usuario, :tiporelacionid, :principal, :activo)";
+  //Consultar si existe la relación responsable caso
+  public const _RPC_EXISTE = "SELECT 1 FROM oper.rpc_responsable_caso WHERE cso_id = :casoid AND rps_id = :responsableid";
+  //Actualizar responsable caso
+  public const _RPC_ACTUALIZAR = "UPDATE oper.rpc_responsable_caso SET rpc_fecha_auditoria = current_timestamp, 
+    usr_id_auditoria = :usuario, vlc_id_tipo_relacion = :tiporelacionid, rpc_principal = :principal, rpc_activo = true
+    WHERE cso_id = :casoid AND rps_id = :responsableid";
   //Inactivar responsable caso
   public const _RPC_INACTIVAR = "UPDATE oper.rpc_responsable_caso SET activo = false 
     WHERE cso_id=:casoid AND rps_id = :responsableid";
@@ -376,4 +386,5 @@ class QUERY_OPER {
             )
           )
     ) T GROUP BY alerta";
+
 }

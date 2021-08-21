@@ -13,17 +13,18 @@ use Illuminate\Support\Facades\DB;
 class APPBASE {
   //Identificador de usuario
   public $usuarioID = 0;
-  public $opcion = 0;
+  public $opcion = "";
   public $request = null;
   public $parametros = array();
 
   //Obtiene la información de usuario de la base de datos
-  function __construct(Request $request, int $opcion) {
+  function __construct(Request $request, $opcion) {
     //Obtener encabezados
     $this->variablesServidor = array ("Authorization" => $request->header("Authorization"), "ip" => $request->ip());
     //Obtener parámetros enviados
     $this->parametros = $this->obtenerParametros($request);
-    $this->opcion = $opcion;
+    if(is_array($opcion)) { $this->opcion = implode("," , $opcion);} else {$this->opcion = $opcion;}
+
     $this->request = $request;
     //Validar por opción con sesión de usuario o temporal solamente
     if($opcion != ENUM_OPC::OPCION_SIN_SESION) $this->validarSesion();
@@ -51,6 +52,7 @@ class APPBASE {
   }
   //Validar que la sesión se encuentre activa para ejecutar operaciones BD
   private function validarSesion() : void{
+    
     //ontener el usuario
     $this->usuarioID= $this->obtenerRegistro(QUERY_SEG::_SES_VALIDAR,
                             array("sesion" => $this->variablesServidor["Authorization"], 

@@ -19,17 +19,17 @@ class Core {
     //Identificador de usuario de sesión
     public static $usuarioID;
     //Opción desde la que se realiza la operación
-    private $opcion = 1000000;
+    private $opcion = "10000000";
     //Request enviado
     private $request;
     //Obtiene la información de usuario de la base de datos
-    function __construct(Request $request, int $opcion) {
+    function __construct(Request $request, $opcion) {
         //Obtener encabezados
         $this->variablesServidor = array ("Authorization" => $request->header("Authorization"),
                                           "ip" => $request->ip());
         //Obtener parámetros enviados
         $this->parametros = $this->obtenerParametros($request);
-        $this->opcion = $opcion;
+        if(is_array($opcion)) { $this->opcion = implode("," , $opcion);} else {$this->opcion = $opcion;}
         $this->request = $request;
     }
     //Obtener el arreglo de valores de los parámetros enviados

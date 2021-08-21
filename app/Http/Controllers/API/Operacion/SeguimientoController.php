@@ -14,18 +14,18 @@ use Illuminate\Support\Facades\DB;
 class SeguimientoController extends Controller {
   //Consulta lista de seguimientos por caso
   function listarPorCaso(Request $request){
-    $Seg = new Seguimiento($request, ENUM_OPC::CONSULTAR_CASO);
+    $Seg = new Seguimiento($request, ENUM_OPC::OPCION_GENERAL);
     return $Seg->listarPorCaso();
   }
   //Obtener Diagnostico por ID
   function obtenerDiagnosticoPorID(Request $request){
-    $Seg = new Seguimiento($request, ENUM_OPC::CONSULTAR_CASO);
+    $Seg = new Seguimiento($request, ENUM_OPC::OPCION_GENERAL);
     return $Seg->obtenerDiagnosticoPorID();
   }
   //Insertar seguimiento
   function establecerSeguimiento(Request $request){
-    $Seg = new Seguimiento($request, ENUM_OPC::CONSULTAR_CASO);
-    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
+    $Seg = new Seguimiento($request, ENUM_OPC::OPCION_GENERAL);
+    $Caso = new Caso($request, ENUM_OPC::OPCION_GENERAL);
     DB::beginTransaction();   
     try {
       $diagnosticoid = $Seg->establecerDiagnostico();

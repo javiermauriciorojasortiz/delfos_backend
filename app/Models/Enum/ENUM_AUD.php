@@ -22,4 +22,5 @@ class ENUM_AUD {
   public const CASO = 16;
 	public const PARTICIPANTE = 17;
 	public const TAREA = 18;
+	public const COMUNICACIONES = 19;
 }

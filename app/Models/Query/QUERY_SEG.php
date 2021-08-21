@@ -175,6 +175,16 @@ class QUERY_SEG {
     from seg.usr_usuario u left join oper.rps_responsable n on n.rps_id = u.usr_id
     left join seg.usr_usuario a on a.usr_id = n.usr_id_auditoria
     where u.usr_id = :id";
+  //Obtener responsable por identificacion
+  public const _RPS_OBTENERXIDENTIFICACION = "SELECT distinct u.usr_id id, u.eus_id estado, u.tid_id tipoidentificacionid, u.usr_identificacion identificacion,
+    u.usr_primer_nombre primer_nombre, u.usr_segundo_nombre segundo_nombre, u.usr_primer_apellido primer_apellido,
+    u.usr_segundo_apellido segundo_apellido, u.usr_email email, u.usr_telefonos telefonos, u.usr_fecha_acceso fecha_acceso,
+    u.usr_fecha_activacion fecha_activacion, u.usr_fecha_intento fecha_intento,
+    a.usr_primer_nombre || ' ' || a.usr_primer_apellido || ' ' || to_char(n.rps_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria,
+    rps_autoriza_email autoriza_email, rps_autoriza_sms autoriza_sms
+    from seg.usr_usuario u left join oper.rps_responsable n on n.rps_id = u.usr_id
+    left join seg.usr_usuario a on a.usr_id = n.usr_id_auditoria
+    where u.usr_identificacion = :identificacion";
   //Consultar participantes externos
     //Consultar participantes
   public const _USR_CONSULTARPARTICIPANTE = "SELECT distinct u.usr_id id, o.eus_nombre estado, 
@@ -192,4 +202,18 @@ class QUERY_SEG {
         and DATE(u.usr_fecha_acceso) between coalesce(:fechaini, TO_DATE('20000101', 'YYYYMMDD')) and coalesce(:fechafin, TO_DATE('21000101', 'YYYYMMDD'))
         and o.eus_id = coalesce(:estado, o.eus_id) 
         limit 1000";
+  //Enviar comunicaciones a los tipos de usuario definidos
+  public const _TUS_DESTINO_COMUNICACIONES = "SELECT DISTINCT usr_email email, usr_primer_nombre || ' ' || usr_primer_apellido nombre, 
+      vlc_nombre tipoentidad, coalesce(eap_nombre, upu_nombre, mnc_nombre, '') entidad, usr_telefonos telefono
+    FROM seg.tus_tipo_usuario tus
+    INNER JOIN seg.rou_rol_usuario rou on rou.tus_id = tus.tus_id
+    INNER JOIN seg.usr_usuario usr on usr.usr_id = rou.usr_id
+    INNER JOIN conf.vlc_valor_catalogo vlc on vlc.vlc_id = tus.vlc_id_tipo_entidad
+    LEFT JOIN oper.rps_responsable rps on rps.rps_id = usr.usr_id
+	  LEFT JOIN oper.ntf_notificador ntf on ntf.ntf_id = usr.usr_id
+    LEFT JOIN conf.eap_eapb eap on eap.eap_id = rou_entidadid and vlc.vlc_codigo = 'EAPB'
+    LEFT JOIN conf.upu_upgd_ui upu on upu.upu_id = rou_entidadid and vlc.vlc_codigo = 'UPGD'
+    LEFT JOIN conf.mnc_municipio mnc on mnc.mnc_id = rou_entidadid and vlc.vlc_codigo = 'SECR'
+    where tus.tus_id = ANY(string_to_array(:tiposusuario ,  ',')::integer[])
+      AND usr.eus_id = 1 AND coalesce(rps_autoriza_email, ntf_autoriza_email, true) = true";
 }

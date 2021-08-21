@@ -36,4 +36,9 @@ class Responsable extends APPBASE {
   public function obtenerResponsable(){
     return $this->obtenerResultset(QUERY_SEG::_RPS_OBTENERXID)[0];
   }
+  //Obtener usuario por identificador
+  public function obtenerResponsablePorIdentificacion(){
+    return $this->obtenerResultset(QUERY_SEG::_RPS_OBTENERXIDENTIFICACION);
+  }
+  
 }

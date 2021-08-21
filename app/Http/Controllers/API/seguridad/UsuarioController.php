@@ -106,6 +106,11 @@ class UsuarioController extends Controller
         $responsable = new Responsable($request, ENUM_OPC::OPCION_GENERAL); 
         return json_encode($responsable->obtenerResponsable());    
     }
+    //Obtener usuario por identificacion
+    public function obtenerResponsablePorIdentificacion(Request $request){
+        $responsable = new Responsable($request, ENUM_OPC::OPCION_GENERAL); 
+        return $responsable->obtenerResponsablePorIdentificacion();    
+    }
     //Establece el usuario y retorna el número
     public function establecerUsuario(Request $request){
         $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL); 

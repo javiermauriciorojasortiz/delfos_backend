@@ -5,7 +5,10 @@ namespace App\Http\Controllers\API\Operacion;
 use App\Http\Controllers\Controller;
 use App\Models\Enum\ENUM_OPC;
 use App\Models\Operacion\Caso;
+use App\Models\Seguridad\Usuario;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 //Clase controladora de los catálogos
 class CasoController extends Controller
@@ -27,22 +30,47 @@ class CasoController extends Controller
   }
   //Establecer paciente
   function establecerPaciente(Request $request){
-    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
-    return $Caso->establecerPaciente(); 
+    DB::beginTransaction();
+    try {
+      $Caso = new Caso($request, [ENUM_OPC::OPCION_GENERAL]);
+      $Usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
+      $idCaso = $Caso->establecerPaciente(); 
+      //Si debe modificarse el usuario principal
+      if($Caso->parametros["responsableprincipal"]!= null) {
+        $paramsUsuario = $Caso->parametros["responsableprincipal"];
+        $tiporelacionid = $paramsUsuario["tiporelacionprincipalid"];
+        unset($paramsUsuario["tiporelacionprincipalid"]);
+        $idUsuario = $Usuario->establecerUsuario($paramsUsuario);
+        $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, true);
+      }
+      //Si debe modificarse el usuario secundario
+      if($Caso->parametros["responsablesecundario"]!= null) {
+        $paramsUsuario = $Caso->parametros["responsablesecundario"];
+        $tiporelacionid = $paramsUsuario["tiporelacionprincipalid"];
+        unset($paramsUsuario["tiporelacionprincipalid"]);
+        $idUsuario = $Usuario->establecerUsuario($paramsUsuario);
+        $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, false);
+      }
+      DB::commit();
+      return array("codigo" => 1, "descripcion" => "Exitoso");
+    } catch(Exception $e) {
+      DB::rollBack();
+      return array("codigo" => 0, "descripcion" => $e->getMessage());
+    }
   }
   //Obtener caso por id
   function obtenerCasoPorID(Request $request){
-    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
+    $Caso = new Caso($request, ENUM_OPC::OPCION_GENERAL);
     return json_encode($Caso->obtenerPorID()); 
   }
   //Obtener caso por id
   function listarHistoricoPaciente(Request $request){
-    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
+    $Caso = new Caso($request, ENUM_OPC::OPCION_GENERAL);
     return $Caso->listarHistoricoPaciente(); 
   }
   //Obtener responsables del caso 
   function obtenerResponsablesxCaso(Request $request){
-    $Caso = new Caso($request, ENUM_OPC::CONSULTAR_CASO);
+    $Caso = new Caso($request, ENUM_OPC::OPCION_GENERAL);
     return $Caso->obtenerResponsablesxCaso();
   }
 }

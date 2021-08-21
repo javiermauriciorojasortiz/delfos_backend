@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 //Clase de gestión de auditoría
 class Caso extends APPBASE {
 	//Constructor por defecto
-	function __construct(Request $request, int $opcion) {
+	function __construct(Request $request, $opcion) {
 		parent::__construct($request, $opcion);
 	}
 	//Consultar caso
@@ -48,13 +48,13 @@ class Caso extends APPBASE {
 	function establecerPaciente(){
 		$rta = null;
 		if($this->parametros["id"]==0 ){
-			$rta = $this->obtenerRegistro(QUERY_OPER::_CSO_INSERTAR, $this->listarParamRequeridos(["id","activo"]), true)->cso_id;
+			$rta = $this->obtenerRegistro(QUERY_OPER::_CSO_INSERTAR, $this->listarParamRequeridos(["id","activo","responsableprincipal", "responsablesecundario"]), true)->cso_id;
 			$Descripcion = "Paciente ID: " . $rta . " . Identificacion: ". $this->parametros["identificacion"] . 
 										 "Nombre: ". $this->parametros["primer_nombre"] . " " . $this->parametros["primer_apellido"] ;
 			$this->insertarAuditoria(ENUM_AUD::CASO, $Descripcion, true, 'I');	
 		} else {
 			$rta = $this->parametros["id"];
-			$this->actualizarData(QUERY_OPER::_CSO_ACTUALIZAR, $this->listarParamRequeridos(["activo"]), true);
+			$this->actualizarData(QUERY_OPER::_CSO_ACTUALIZAR, $this->listarParamRequeridos(["activo","responsableprincipal", "responsablesecundario"]), true);
 			$Descripcion = "Paciente ID: " . $rta . " . Identificacion: ". $this->parametros["identificacion"] . 
 										 "Nombre: ". $this->parametros["primer_nombre"] . " " . $this->parametros["primer_apellido"] ;
 			$this->insertarAuditoria(ENUM_AUD::CASO, $Descripcion, true, 'M');		
@@ -76,5 +76,15 @@ class Caso extends APPBASE {
 		$rta = $this->actualizarData(QUERY_OPER::_CSO_ACTUALIZAR_ULTIMO_SEGUIMIENTO, 
 			array("seguimientoid"=> $seguimientoid, "casoid"=>$casoid));
 		return $rta;		
+	}
+	//Establecer relacion responsable
+	function establecerRelacionResponsable(int $idCaso, int $idUsuario, int $tiporelacionid, bool $principal){
+		$relacion = $this->obtenerResultset(QUERY_OPER::_RPC_EXISTE, array("casoid"=>$idCaso, "responsableid"=>$idUsuario));
+		$params = array("casoid"=>$idCaso, "responsableid"=>$idUsuario, "tiporelacionid"=>$tiporelacionid, "principal"=>$principal);
+		if(count($relacion)>0){ //Existe y debe actualizarse
+			$this->actualizarData(QUERY_OPER::_RPC_ACTUALIZAR, $params, true);
+		} else { //Insertar relación
+			$this->actualizarData(QUERY_OPER::_RPC_INSERTAR, $params, true);
+		}
 	}
 }
