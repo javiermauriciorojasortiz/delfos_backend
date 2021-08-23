@@ -39,4 +39,9 @@ class SeguimientoController extends Controller {
       return array("codigo" => 0, "descripcion" => $e->getMessage());
     }
   }
+  //Obtener proximos seguimientos
+  function listarProximasEvaluaciones(Request $request){
+    $Seg = new Seguimiento($request, ENUM_OPC::OPCION_GENERAL);
+    return $Seg->listarProximasEvaluaciones();
+  }
 }

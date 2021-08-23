@@ -16,8 +16,11 @@ class Responsable extends APPBASE {
   }
   //Inserta o actualiza al responsable
   public function establecerResponsable(int $id, bool $nuevo){
-    $params = array("id" => $id, "autoriza_email" =>  $this->parametros["autoriza_email"],
-                    "autoriza_sms" => $this->parametros["autoriza_sms"]);
+    $autorizaemail = true;
+    $autorizasms = true;
+    if(array_key_exists('autoriza_email', $this->parametros)) $autorizaemail =$this->parametros["autoriza_sms"];
+    if(array_key_exists("autoriza_sms", $this->parametros)) $autorizaemail = $this->parametros["autoriza_sms"];
+    $params = array("id" => $id, "autoriza_email" => $autorizaemail, "autoriza_sms" => $autorizasms);
     $rta = null;
     if($nuevo==1) {//Insertar
       if($this->usuarioID <= 0) $this->usuarioID = $id;

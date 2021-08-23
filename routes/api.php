@@ -121,6 +121,7 @@ Route::get('obtenerresponsablesxcaso', [CasoController::class, 'obtenerResponsab
 Route::get('listarseguimientosporcaso', [SeguimientoController::class, 'listarPorCaso']);
 Route::post('establecerseguimiento', [SeguimientoController::class, 'establecerSeguimiento']);
 Route::get('obtenerdiagnosticoporid',  [SeguimientoController::class, 'obtenerDiagnosticoPorID']);
+Route::get('listarproximasevaluaciones',  [SeguimientoController::class, 'listarProximasEvaluaciones']);
 //Solicitud ayuda
 Route::get('listarsolicitudesporcaso', [SolicitudAyudaController::class, 'listarPorCaso']);
 Route::post('crearsolicitudatencion', [SolicitudAyudaController::class, 'crearSolicitudAyuda']);

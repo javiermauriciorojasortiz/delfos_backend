@@ -160,7 +160,7 @@ class Usuario extends Core {
     //Establece el usuario y retorna el número
     public function establecerUsuario(array $params = null){
       if($params == null) $params = $this->parametros;
-      if($this->parametros["id"]<= 0) {//Insertar
+      if($params["id"]<= 0) {//Insertar
         $rta = null;
         if($params["estado"] == null) $params["estado"] = 1;
         $rta = $this->obtenerResultset(QUERY_SEG::_USR_INSERTAR, $params, true, ["auditoria","id", "clave"])[0]->usr_id;
@@ -171,7 +171,7 @@ class Usuario extends Core {
       } else { //Actualizar
         //throw new Exception(implode("|", array_keys($params)));
          $this->actualizarData(QUERY_SEG::_USR_ACTUALIZAR, $params, true, ["clave","auditoria"]);
-         $rta = $this->parametros["id"];
+         $rta = $params["id"];
          $observacion = "Usuario ID: " . $this->parametros["id"] . ". Identificacion: " . $params["identificacion"];
          $this->insertarAuditoria(Core::$usuarioID,ENUM_AUD::USUARIO, $observacion, true, "M", ""); //Existe el usuario
        }

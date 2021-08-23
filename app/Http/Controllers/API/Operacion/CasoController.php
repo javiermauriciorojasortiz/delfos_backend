@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\Operacion;
 use App\Http\Controllers\Controller;
 use App\Models\Enum\ENUM_OPC;
 use App\Models\Operacion\Caso;
+use App\Models\Seguridad\Responsable;
 use App\Models\Seguridad\Usuario;
 use Exception;
 use Illuminate\Http\Request;
@@ -34,6 +35,7 @@ class CasoController extends Controller
     try {
       $Caso = new Caso($request, [ENUM_OPC::OPCION_GENERAL]);
       $Usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
+      $Responsable = new Responsable($request, ENUM_OPC::OPCION_GENERAL);
       $idCaso = $Caso->establecerPaciente(); 
       //Si debe modificarse el usuario principal
       if($Caso->parametros["responsableprincipal"]!= null) {
@@ -41,6 +43,7 @@ class CasoController extends Controller
         $tiporelacionid = $paramsUsuario["tiporelacionprincipalid"];
         unset($paramsUsuario["tiporelacionprincipalid"]);
         $idUsuario = $Usuario->establecerUsuario($paramsUsuario);
+        $Responsable->establecerResponsable($idUsuario, $paramsUsuario["id"]>0?0:1);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, true);
       }
       //Si debe modificarse el usuario secundario
@@ -49,13 +52,14 @@ class CasoController extends Controller
         $tiporelacionid = $paramsUsuario["tiporelacionprincipalid"];
         unset($paramsUsuario["tiporelacionprincipalid"]);
         $idUsuario = $Usuario->establecerUsuario($paramsUsuario);
+        $Responsable->establecerResponsable($idUsuario, $paramsUsuario["id"]>0?0:1);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, false);
       }
       DB::commit();
       return array("codigo" => 1, "descripcion" => "Exitoso");
     } catch(Exception $e) {
       DB::rollBack();
-      return array("codigo" => 0, "descripcion" => $e->getMessage());
+      return array("codigo" => 0, "descripcion" => $e->__toString());
     }
   }
   //Obtener caso por id

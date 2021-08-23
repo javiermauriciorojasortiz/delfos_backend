@@ -59,4 +59,9 @@ class Seguimiento extends APPBASE {
 			$this->actualizarData(QUERY_OPER::_PXE_INSERTAR, $paramin);
 		}
 	}
+	//Listar próximas evaluaciones por seguimiento
+	function listarProximasEvaluaciones() {
+		$rta = $this->obtenerResultset(QUERY_OPER::_PXE_LISTARXSEGUIMIENTO);
+		return $rta;
+	}
 }

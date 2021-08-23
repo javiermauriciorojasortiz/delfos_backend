@@ -9,7 +9,8 @@ class QUERY_OPER {
   public const _CSO_CONSULTARXIDENTIFICACION = "SELECT cso.cso_id id, tid_codigo || ' ' || cso_identificacion identificacion, 
     cso_primer_nombre || ' ' || coalesce(cso_primer_apellido, '') nombre,
     CASE WHEN NOT cso_nacido then 'No nacido' 
-        ELSE (DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido)) || ' Meses' END edad 
+        ELSE (DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido)) || ' Meses' END edad,
+        sgm_id_ultimo ultimoseguimientoid
     FROM oper.cso_caso cso INNER JOIN conf.tid_tipo_identificacion tid ON tid.tid_id = cso.tid_id
     WHERE cso.cso_identificacion = :identificacion
     OR EXISTS(SELECT 1 FROM oper.csoh_caso_hst WHERE cso_identificacion = :identificacion)
@@ -80,7 +81,7 @@ class QUERY_OPER {
     cso_fecha_nacido=:fecha_nacido, cso_semana=:semana,	pai_id=:paisid,	cso_divipol=:departamento, mnc_id=:municipioid, 
     cso_barrio=:barrio, brr_id=:barrioid, cso_direccion=:direccion,	eap_id=:eapbid, cso_fecha_auditoria = current_timestamp,
     dvp_id = :departamentoid, cso_municipio = :municipio,
-    usr_id_auditoria=:usuario, cso_nacido=:nacido, cso_latitud=:lan, cso_longitud=:lng where cso_id=:id";
+    usr_id_auditoria=:usuario, cso_nacido=:nacido, cso_latitud=:lat, cso_longitud=:lng where cso_id=:id";
   //Insertar diagnostico
   public const _DGN_INSERTAR = "INSERT into oper.dgn_diagnostico (dgn_id, vlc_id_tipo_defecto,
     vlc_id_cardiopatia, vlc_id_tipo_defecto_otro, vlc_id_diagnostico_principal, vlc_id_diagnostico_secundario,
@@ -118,7 +119,7 @@ class QUERY_OPER {
     sgm_desc_valoracion=:descvaloracion, rps_id_valoracion=:idvaloracion WHERE sgm_id=:id";
   //Lista de seguimientos caso
   public const _SGM_LISTARXCASO = "SELECT sgm_id id, usr_primer_nombre || ' ' || usr_primer_apellido doctor,
-    sgm_fecha fecha, t.vlc_nombre tipoatencion, d.vlc_nombre diagnostico, e.esp_nombre estado
+    sgm_fecha fecha, sgm_fecha_creacion fechacreacion, t.vlc_nombre tipoatencion, d.vlc_nombre diagnostico, e.esp_nombre estado
     from oper.sgm_seguimiento s
     inner join seg.usr_usuario u on u.usr_id = s.ntf_id
     inner join conf.vlc_valor_catalogo t on t.vlc_id = s.vlc_id_tipo_atencion
@@ -204,7 +205,7 @@ class QUERY_OPER {
   //Insertar responsable caso
   public const _RPC_INSERTAR = "INSERT INTO oper.rpc_responsable_caso(
     cso_id, rps_id, rpc_fecha_auditoria, usr_id_auditoria, vlc_id_tipo_relacion, rpc_principal, rpc_activo)
-    VALUES (:casoid, :responsableid, current_timestamp, :usuario, :tiporelacionid, :principal, :activo)";
+    VALUES (:casoid, :responsableid, current_timestamp, :usuario, :tiporelacionid, :principal, true)";
   //Consultar si existe la relación responsable caso
   public const _RPC_EXISTE = "SELECT 1 FROM oper.rpc_responsable_caso WHERE cso_id = :casoid AND rps_id = :responsableid";
   //Actualizar responsable caso
@@ -223,6 +224,16 @@ class QUERY_OPER {
     SET usr_id_verificada=:usuarioid, pxe_fecha_verificada=current_timestamp, pxe_fecha_programada=:fechaprogramada, 
     upu_id=:upgduiid, vlc_id_categoria=:categoriaid, vlc_id_tipo_atencion=:tipoatencionid
     WHERE pxe_id=:id";
+  //Obtener por seguimiento
+  public const _PXE_LISTARXSEGUIMIENTO = "SELECT pxe_id pxeid, sgm.sgm_id seguimientoid, pxe_fecha fecha,
+    usr_id_verificada usuarioverificadaid, pxe_fecha_verificada fechaverificada, pxe_fecha_programada fechaprogramada,
+    pxe.upu_id upgduiid, pxe.vlc_id_categoria categoriaid, pxe.vlc_id_tipo_atencion tipoatencionid, vlccat.vlc_nombre categoria,
+    vlctpa.vlc_nombre tipoatencion, cso_id casoid, dgn_id diagnosticoid
+    FROM oper.pxe_proxima_evaluacion pxe
+    INNER JOIN oper.sgm_seguimiento sgm ON sgm.sgm_id = pxe.sgm_id
+    INNER JOIN conf.vlc_valor_catalogo vlccat on vlccat.vlc_id = pxe.vlc_id_categoria
+    INNER JOIN conf.vlc_valor_catalogo vlctpa on vlctpa.vlc_id = pxe.vlc_id_tipo_atencion
+    WHERE pxe.sgm_id = :idseguimiento";
   //listar Responsables
   public const _CSO_LISTARRESPONSABLES = "SELECT rps_id id, tid.tid_codigo || ' ' || usr.usr_identificacion || ' ' || usr.usr_primer_nombre || ' ' || 
       usr.usr_primer_apellido responsable
