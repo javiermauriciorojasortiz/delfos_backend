@@ -128,11 +128,28 @@ class QUERY_OPER {
     inner join conf.vlc_valor_catalogo d on d.vlc_id = dgn.vlc_id_diagnostico_principal where cso_id = :casoid";
   //Consultar caso histórico 
   public const _CSOH_LISTAR = "SELECT cso.csoh_id id, tid_codigo || ' ' || cso_identificacion identificacion, 
-    cso_primer_nombre || ' ' || coalesce(cso_primer_apellido, '') nombre,
-    CASE WHEN NOT cso_nacido then 'No nacido' 
-        ELSE (DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido)) || ' Meses' END edad,
+      cso_primer_nombre || coalesce(' ' || cso_segundo_nombre, '') || coalesce(' ' || cso_primer_apellido, '') || 
+      coalesce(' ' || cso_segundo_apellido, '') nombre, cso_fecha_nacido fechanacido,
+      case when not cso.cso_nacido then 'No nacido'
+        else
+          case when DATE_PART('year', current_timestamp) - DATE_PART('year', cso_fecha_nacido) > 0 
+              then DATE_PART('year', current_timestamp) - DATE_PART('year', cso_fecha_nacido) || ' Años' 
+            when DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido) > 0
+              then DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido) || ' Meses'
+            else DATE_PART('day', current_timestamp - cso_fecha_nacido) || ' Días' 
+          end
+        end edad, 
+      pai_nombre || ' ' || coalesce(dvp_nombre, cso_divipol) || ' ' || coalesce(mnc_nombre, cso_municipio) 
+    || ' ' || coalesce(brr_nombre, cso_barrio) || ' ' || cso_direccion ubicacion, eap_nombre eapb,
+    case when cso_activo then 'Si' else 'No-' || vlc_nombre end activo,
       csoh_fecha fecha
-    FROM oper.csoh_caso_hst cso INNER JOIN conf.tid_tipo_identificacion tid ON tid.tid_id = cso.tid_id
+      FROM oper.csoh_caso_hst cso INNER JOIN conf.tid_tipo_identificacion tid ON tid.tid_id = cso.tid_id
+      INNER JOIN conf.pai_pais pai on pai.pai_id = cso.pai_id
+    LEFT JOIN conf.mnc_municipio mnc on mnc.mnc_id = cso.mnc_id
+    LEFT JOIN conf.dvp_divipola dep on dep.dvp_id = cso.dvp_id
+    LEFT JOIN conf.brr_barrio brr on brr.brr_id = cso.brr_id
+    INNER JOIN conf.eap_eapb eap on eap.eap_id = cso.eap_id
+    LEFT JOIN conf.vlc_valor_catalogo vlc on vlc.vlc_id = cso.vlc_id_causal_inactivo
       WHERE cso.cso_id = :casoid";
   //Consultar solicitudes atención caso
   public const _ATP_LISTARXCASO = "SELECT atp_id id, vlcta.vlc_nombre tipoayuda, atp_descripcion descripcion, 
@@ -163,7 +180,7 @@ class QUERY_OPER {
     FROM oper.atp_atencion_pendiente atp
     inner join oper.cso_caso cso on cso.cso_id = atp.cso_id
     inner join conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
-    inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = 45 and vlc.cat_id = 13
+    inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma(cso.cso_id)
     inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 51 and vtipo.cat_id = 14
     inner join seg.rou_rol_usuario rou on rou.tus_id = 6 and rou_entidadid = cso.eap_id
     left join oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
@@ -177,7 +194,7 @@ class QUERY_OPER {
       FROM oper.atp_atencion_pendiente atp
       inner join oper.cso_caso cso on cso.cso_id = atp.cso_id
       inner join conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
-      inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = 45 and vlc.cat_id = 13
+      inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma(cso.cso_id)
       inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 52 and vtipo.cat_id = 14
       inner join oper.rpc_responsable_caso rpc on rpc.cso_id = cso.cso_id
       left join oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
@@ -262,7 +279,7 @@ class QUERY_OPER {
     LEFT JOIN conf.vlc_valor_catalogo d on d.vlc_id = dgn.vlc_id_diagnostico_principal
     LEFT JOIN oper.esp_estado_paciente e on e.esp_id = dgn.esp_id
     LEFT JOIN conf.vlc_valor_catalogo r on r.vlc_id = e.vlc_id_nivel_riesgo
-    LEFT JOIN conf.vlc_valor_catalogo a on a.vlc_id = 45
+    LEFT JOIN conf.vlc_valor_catalogo a on a.vlc_id = oper.fncso_alarma(cso.cso_id)
     WHERE (:diagnosticoid = 0 or dgn.vlc_id_diagnostico_principal = :diagnosticoid)
       AND (:estadopacienteid = 0 or e.esp_id = :estadopacienteid)
       AND cso_fecha_ingreso between coalesce(:fechaingresoini, cso_fecha_ingreso) and coalesce(:fechaingresofin, cso_fecha_ingreso)
@@ -298,7 +315,7 @@ class QUERY_OPER {
           LEFT JOIN conf.vlc_valor_catalogo d on d.vlc_id = dgn.vlc_id_diagnostico_principal
           LEFT JOIN oper.esp_estado_paciente e on e.esp_id = dgn.esp_id
           LEFT JOIN conf.vlc_valor_catalogo r on r.vlc_id = e.vlc_id_nivel_riesgo
-          LEFT JOIN conf.vlc_valor_catalogo a on a.vlc_id = 45
+          LEFT JOIN conf.vlc_valor_catalogo a on a.vlc_id = oper.fncso_alarma(cso.cso_id)
           WHERE (:diagnosticoid = 0 or dgn.vlc_id_diagnostico_principal = :diagnosticoid)
             AND (:estadopacienteid = 0 or e.esp_id = :estadopacienteid)
             AND cso_fecha_ingreso between coalesce(:fechaingresoini, cso_fecha_ingreso) and coalesce(:fechaingresofin, cso_fecha_ingreso)
@@ -324,7 +341,8 @@ class QUERY_OPER {
             then DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido) || ' Meses'
           else DATE_PART('day', current_timestamp - cso_fecha_nacido) || ' Días' 
         end
-      end edad, e.esp_nombre estado, cso_direccion direccion, cso.cso_latitud lat, cso.cso_longitud lng
+      end edad, e.esp_nombre estado, 
+      replace(cso_direccion, '|', ' ') direccion, cso.cso_latitud lat, cso.cso_longitud lng
     FROM oper.cso_caso cso
     INNER JOIN conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
     LEFT JOIN oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
@@ -332,7 +350,7 @@ class QUERY_OPER {
     LEFT JOIN conf.vlc_valor_catalogo d on d.vlc_id = dgn.vlc_id_diagnostico_principal
     LEFT JOIN oper.esp_estado_paciente e on e.esp_id = dgn.esp_id
     LEFT JOIN conf.vlc_valor_catalogo r on r.vlc_id = e.vlc_id_nivel_riesgo
-    LEFT JOIN conf.vlc_valor_catalogo a on a.vlc_id = 45
+    LEFT JOIN conf.vlc_valor_catalogo a on a.vlc_id = oper.fncso_alarma(cso.cso_id)
     LEFT JOIN conf.brr_barrio brr on brr.brr_id = cso.brr_id
     WHERE (:diagnosticoid = 0 or dgn.vlc_id_diagnostico_principal = :diagnosticoid)
       AND (:estadopacienteid = 0 or e.esp_id = :estadopacienteid)
@@ -374,7 +392,7 @@ class QUERY_OPER {
     SUM(CASE WHEN tipoatencion = 'REMISIÓN' then 1 else 0 end) remision,	
     alerta FROM (
     SELECT case when DATE_PART('day', pxe_fecha - current_timestamp) < 0 then 'Rojo' --(Atención Roja (Atrasada 1 día)
-          when DATE_PART('day', pxe_fecha - current_timestamp) = 0 then 'Amarillo' -- Amarilla (Proxima a vencerce 1 día) 
+          when DATE_PART('day', pxe_fecha - current_timestamp) = 0 then 'Amari' -- Amarilla (Proxima a vencerce 1 día) 
           else 'Verde' end alerta,  -- Verde (A tiempo))
       vlcta.vlc_nombre tipoatencion
       FROM oper.cso_caso cso

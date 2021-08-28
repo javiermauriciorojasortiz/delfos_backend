@@ -41,6 +41,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('login', [UsuarioController::class, 'autenticar']);
 Route::get('consultarusuarios', [UsuarioController::class, 'buscar']);
 Route::post('autenticar', [UsuarioController::class, 'autenticarporToken']);
+Route::get('obtenertiposusuariousuario', [UsuarioController::class, 'obtenerTiposUsuarioUsuario']);
 Route::post('enviarcorreo', [UsuarioController::class, 'enviarcorreo']);
 Route::get('obtenermenuusuario', [UsuarioController::class, 'obtenerMenuUsuario']);
 Route::post('consultarusuarios', [UsuarioController::class, 'consultarUsuarios']);

@@ -44,6 +44,10 @@ class Usuario extends Core {
       }  
       return $rta;
     }
+    //Obtiene los tipos de usuario de un usuario
+    function obtenerTiposUsuarioUsuario(){
+      return $this->obtenerResultset(QUERY_SEG::_USR_LISTAR_TUS, [], true);
+    }
     //Obtiene el usuario si el login es correcto
     function autenticarporToken(){
       $params = $this->parametros;

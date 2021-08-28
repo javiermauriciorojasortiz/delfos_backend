@@ -67,6 +67,9 @@ class QUERY_SEG {
   public const _USR_CAMBIARCLAVE = "SELECT * FROM seg.fnusr_actualizarclave(:id,:claveanterior,:clavenueva, :usuario)";
   //Autenticar por usuario y clave
   public const _USR_AUTENTICAR = 'SELECT * FROM seg.fnusr_autenticar(:tipousuario, :emailidentificacion, :clave, :ip)';
+  //Obtener tipos de usuario usuario
+  public const _USR_LISTAR_TUS = 'SELECT tus.tus_id id, tus_nombre nombre FROM seg.rou_rol_usuario rou 
+    INNER JOIN seg.tus_tipo_usuario tus on tus.tus_id=rou.tus_id WHERE rou.usr_id = :usuario';
   //Autenticar por token
   public const _USR_AUTENTICARXTOKEN = 'SELECT * FROM seg.fnusr_autenticarportoken(:sesion, :emailidentificacion, :ip)';
   //Consultar usuarios
@@ -92,7 +95,7 @@ class QUERY_SEG {
   //Obtener menú
   public const _USR_OBTENERMENU = "SELECT distinct o.opc_id id, opc_nombre nombre, opc_descripcion descripcion, opc_ruta url, 
       coalesce(opc_id_padre, 0) opcionPadre, opc_orden orden
-      FROM seg.rou_rol_usuario r 
+      FROM seg.rou_rol_usuario r
       inner join seg.tuo_tipo_usuario_opcion t on t.tus_id = r.tus_id 
       inner join seg.opc_opcion o on o.opc_id = t.opc_id
       where r.usr_id = :usuario

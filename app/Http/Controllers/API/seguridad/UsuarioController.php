@@ -22,7 +22,17 @@ class UsuarioController extends Controller
     //Autenticar al usuario desde la página de login
     public function autenticar(Request $request) {
         $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
-        return $usuario->autenticar();
+        $rta = $usuario->autenticar();
+        if(count($rta) > 0) {
+           //$rta[0]["tiposusuario"] = 
+           ; //$rta[0]->id);
+        }
+        return $rta;
+    }
+    //Obtener tipos de usuario del usuario
+    public function obtenerTiposUsuarioUsuario(Request $request){
+        $usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
+        return $usuario->obtenerTiposUsuarioUsuario();
     }
     //Autenticar al usuario por el token guardado en las cookies del cliente
     public function autenticarporToken(Request $request){
