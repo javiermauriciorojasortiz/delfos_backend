@@ -64,4 +64,29 @@ class Seguimiento extends APPBASE {
 		$rta = $this->obtenerResultset(QUERY_OPER::_PXE_LISTARXSEGUIMIENTO);
 		return $rta;
 	}
+	//
+	function listarSeguimientosProximosPorCaso(){
+		$rta = $this->obtenerResultset(QUERY_OPER::_PXE_LISTARXCASO);
+		return $rta;
+	}
+	//Obtener seguimiento por id
+	function obtenerSeguimientoPorID(){
+		$rta = $this->obtenerRegistro(QUERY_OPER::_SGM_OBTENERXID);
+		return $rta;	
+	}
+	//Establecer valoración
+	function establecerConfirmacionSeguimiento(){
+		$rta = $this->actualizarData(QUERY_OPER::_SGM_CONFIRMAR);
+		return $rta;
+	}
+	//obtenerProximoSeguimientoPorID
+	function obtenerProximoSeguimientoPorID(){
+		$rta = $this->obtenerRegistro(QUERY_OPER::_PXE_OBTENERXID);
+		return $rta;	
+	}
+	//confirmar la Programacion de la Proxima Evaluacion por parte del Responsable
+	function confirmarProgramacionProximaEvaluacion(){
+		$rta = $this->obtenerRegistro(QUERY_OPER::_PXE_CONFIRMARPROGRAMACION, $this->listarParamRequeridos(), true);
+		return $rta;	
+	}
 }

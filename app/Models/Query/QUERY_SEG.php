@@ -23,8 +23,8 @@ class QUERY_SEG {
       and usr_email like coalesce(:email, '') || '%'
       and aud_descripcion like coalesce(:descripcion, '') || '%'
       and aud_fecha >=coalesce(:fechaini, TO_DATE('2000-01-01', 'YYYY-MM-DD')) 
-      and aud_fecha <= coalesce(:fechafin, TO_DATE('2100-01-01', 'YYYY-MM-DD'))
-      Limit 1000";
+      and aud_fecha <= coalesce(:fechafin, TO_DATE('2100-01-01', 'YYYY-MM-DD')) ORDER BY 1 DESC
+      Limit 1000 ";
   
   //Consultar tipo auditoria
   public const _TPA_CONSULTAR = "SELECT tpa_id id, tpa_descripcion nombre, tpa_escribir escribir from seg.tpa_tipo_auditoria";
@@ -144,9 +144,13 @@ class QUERY_SEG {
     u.usr_fecha_activacion fecha_activacion, u.usr_fecha_intento fecha_intento,
     a.usr_primer_nombre || ' ' || a.usr_primer_apellido || ' ' || to_char(n.ntf_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria,
     ntf_pregrado pregrado, ntf_registro_medico registro_medico, ntf_autoriza_email autoriza_email, 
-    ntf_autoriza_sms autoriza_sms, vlc_id_especialidad especialidadid
+    ntf_autoriza_sms autoriza_sms, vlc_id_especialidad especialidadid, vlc.vlc_nombre especialidad,
+    case when n.ntf_resultado_validacion = true then 'Aprobado' else 'Denegado' end || ': ' ||
+      b.usr_primer_nombre || ' ' || b.usr_primer_apellido || ' ' || to_char(n.ntf_fecha_valida, 'YYYY-MM-DD HH:MI:SSPM') aprobado
     from seg.usr_usuario u left join oper.ntf_notificador n on n.ntf_id = u.usr_id
     left join seg.usr_usuario a on a.usr_id = n.usr_id_auditoria 
+    left join seg.usr_usuario b on b.usr_id = n.usr_id_valida 
+    INNER JOIN conf.vlc_valor_catalogo vlc on vlc.vlc_id = vlc_id_especialidad
     where u.usr_id = :id";
   //Insertar notificador 
   public const _NTF_INSERTAR = "INSERT INTO oper.ntf_notificador(ntf_id, ntf_pregrado, ntf_registro_medico, ntf_autoriza_email, 
@@ -157,9 +161,9 @@ class QUERY_SEG {
     ntf_autoriza_email = :autoriza_email, ntf_autoriza_sms = :autoriza_sms, ntf_fecha_auditoria = current_timestamp, 
     usr_id_auditoria= :usuario, vlc_id_especialidad = :especialidadid WHERE ntf_id = :id";
   //Validar notificador
-  public const _NTF_VALIDAR = "UPDATE oper.ntf_notificador SET  usr_id_valida = :usuario, 
-    ntf_fecha_valida = current_timestamp, ntf_anotacion_valida = :anotacion,
-    WHERE ntf_id = :id";
+  public const _NTF_VALIDAR = "UPDATE oper.ntf_notificador SET usr_id_valida = :usuario, 
+    ntf_fecha_valida = current_timestamp, ntf_anotacion_valida = :anotacion, ntf_resultado_validacion = :estado
+    WHERE ntf_id = :id and exist(select 1 from seg.rou_rol_usuario r where r.usr_id = :usuario and r.tus_id = 3)";
   //Responsable establecer
   public const _RPS_INSERTAR = "INSERT INTO oper.rps_responsable(rps_id, rps_autoriza_email, rps_autoriza_sms,  
     rps_fecha_auditoria, usr_id_auditoria)

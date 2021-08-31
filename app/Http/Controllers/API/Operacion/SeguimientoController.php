@@ -44,4 +44,35 @@ class SeguimientoController extends Controller {
     $Seg = new Seguimiento($request, ENUM_OPC::OPCION_GENERAL);
     return $Seg->listarProximasEvaluaciones();
   }
+  //Obtener seguimiento por id
+  function obtenerSeguimientoPorID(Request $request){
+    $Seg = new Seguimiento($request, ENUM_OPC::OPCION_GENERAL);
+    return json_encode($Seg->obtenerSeguimientoPorID());
+  }
+  //Establecer evaluación seguimiento
+  function establecerConfirmacionSeguimiento(Request $request){
+    $Seg = new Seguimiento($request, ENUM_OPC::MIS_TAREAS);
+    return $Seg->establecerConfirmacionSeguimiento();
+  }
+  //Obtener lista de evaluación del último seguimiento por caso
+  function listarSeguimientosProximosPorCaso(Request $request){
+    $Seg = new Seguimiento($request, ENUM_OPC::OPCION_GENERAL);
+    return $Seg->listarSeguimientosProximosPorCaso();
+  }
+  //obtenerProximoSeguimientoPorID
+  function obtenerProximoSeguimientoPorID(Request $request){
+    $Seg = new Seguimiento($request, ENUM_OPC::MIS_TAREAS);
+    return json_encode($Seg->obtenerProximoSeguimientoPorID());
+  }
+  //confirmar Programacion Proxima Evaluacion
+  function confirmarProgramacionProximaEvaluacion(Request $request){
+    $Seg = new Seguimiento($request, ENUM_OPC::MIS_TAREAS);
+    try {
+      $Seg->confirmarProgramacionProximaEvaluacion();
+      return array("codigo" => 1, "descripcion" => "exitoso");
+    } catch (Exception $ex) {
+      return array("codigo" => 0, "descripcion" => $ex->getMessage());
+    }
+    
+  }
 }

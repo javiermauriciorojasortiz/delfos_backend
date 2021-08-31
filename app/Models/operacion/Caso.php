@@ -87,4 +87,24 @@ class Caso extends APPBASE {
 			$this->actualizarData(QUERY_OPER::_RPC_INSERTAR, $params, true);
 		}
 	}
+	//Activa un caso inactivo
+	function activarCaso(){
+		$params = array("id" => $this->parametros["id"]);
+		$paciente = $this->obtenerRegistro(QUERY_OPER::_CSO_ACTIVAR, $params, true);
+		$Descripcion = "Activar Caso Paciente ID: " . $paciente->id . " . Identificacion: ". $paciente->identificacion . 
+		"Nombre: ". $paciente->nombre ;
+		$this->insertarAuditoria(ENUM_AUD::ACTIVAR_INACTIVAR_CASO, $Descripcion, true, 'M');			
+	} 
+	//Inactivar caso 
+	function inactivarCaso(){
+		$params = $this->parametros;
+		$paciente = $this->obtenerRegistro(QUERY_OPER::_CSO_INACTIVAR, $params, true);
+		$Descripcion = "Inactivar Caso Paciente ID: " . $paciente->id . " . Identificacion: ". $paciente->identificacion . 
+		"Nombre: ". $paciente->nombre ;
+		$this->insertarAuditoria(ENUM_AUD::ACTIVAR_INACTIVAR_CASO, $Descripcion, true, 'M');
+	}
+	//Lista de casos reportados inicialmente por el notificador
+	function obtenerCasosNotificador(){
+		return $this->obtenerResultset(QUERY_OPER::_CSO_OBTENERXNOTIFICADOR);
+	}
 }

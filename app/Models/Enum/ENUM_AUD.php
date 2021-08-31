@@ -23,4 +23,5 @@ class ENUM_AUD {
 	public const PARTICIPANTE = 17;
 	public const TAREA = 18;
 	public const COMUNICACIONES = 19;
+	public const ACTIVAR_INACTIVAR_CASO = 20;
 }

@@ -10,6 +10,7 @@ use App\Models\Seguridad\Responsable;
 use App\Models\Seguridad\Usuario;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 //Controlador de eventos de usuario
 class UsuarioController extends Controller
@@ -241,5 +242,19 @@ class UsuarioController extends Controller
     public function consultarParticipantes(Request  $request){
         $usuario = new Usuario($request, ENUM_OPC::PARTICIPANTES);
         return $usuario->consultarParticipantes();
+    }
+    //validarNotificador
+    public function validarNotificador(Request  $request){
+        $usuario = new Notificador($request, ENUM_OPC::MIS_TAREAS);
+        DB::beginTransaction();
+        try {
+            $usuario->validarNotificador();
+            DB::commit();
+            return array("codigo"=>1, "Exitoso");
+        } catch (Exception $ex) {
+            DB::rollBack();
+            return array("codigo"=>0, $ex->getMessage());
+        }
+        
     }
 }

@@ -28,7 +28,7 @@ class QUERY_OPER {
     sgm_id_ultimo seguimientoid, dgn_id diagnosticoid, cso_latitud lat, cso_longitud lng,
     usr.usr_primer_nombre || ' ' || usr.usr_primer_apellido || '-' 
                           || to_char(cso.cso_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM')  auditoria,
-    cso_activo activo, vlc_id_causal_inactivo causal_inactivo,
+    cso_activo activo, vlc_id_causal_inactivo causalinactivoid, vlc_nombre causalinactivo,
     rpsp.rps_id responsableprincipalid, rpsp.vlc_id_tipo_relacion tiporelacionprincipalid,
     rpss.rps_id responsablesecundarioid, rpss.vlc_id_tipo_relacion tiporelacionsecundarioid
     FROM oper.cso_caso cso
@@ -37,6 +37,7 @@ class QUERY_OPER {
     LEFT JOIN seg.usr_usuario usr on usr.usr_id = cso.usr_id_auditoria
     LEFT JOIN oper.rpc_responsable_caso rpsp on rpsp.cso_id = cso.cso_id and rpsp.rpc_principal = true
     LEFT JOIN oper.rpc_responsable_caso rpss on rpss.cso_id = cso.cso_id and rpss.rpc_principal = false
+    LEFT JOIN conf.vlc_valor_catalogo vlc on vlc.vlc_id = vlc_id_causal_inactivo
     where cso.cso_id = :id";
   //Actualizar seguimiento en caso
   public const _CSO_ACTUALIZAR_ULTIMO_SEGUIMIENTO = "UPDATE oper.cso_caso SET sgm_id_ultimo=:seguimientoid WHERE cso_id=:casoid"; 
@@ -139,8 +140,8 @@ class QUERY_OPER {
             else DATE_PART('day', current_timestamp - cso_fecha_nacido) || ' Días' 
           end
         end edad, 
-      pai_nombre || ' ' || coalesce(dvp_nombre, cso_divipol) || ' ' || coalesce(mnc_nombre, cso_municipio) 
-    || ' ' || coalesce(brr_nombre, cso_barrio) || ' ' || cso_direccion ubicacion, eap_nombre eapb,
+      pai_nombre || '-' || coalesce(dvp_nombre, cso_divipol) || '-' || coalesce(mnc_nombre, cso_municipio) 
+    || '-' || coalesce(brr_nombre, cso_barrio) || '-' || cso_direccion ubicacion, eap_nombre eapb,
     case when cso_activo then 'Si' else 'No-' || vlc_nombre end activo,
       csoh_fecha fecha
       FROM oper.csoh_caso_hst cso INNER JOIN conf.tid_tipo_identificacion tid ON tid.tid_id = cso.tid_id
@@ -175,33 +176,74 @@ class QUERY_OPER {
     WHERE atp_id = :id";
   //Listar tareas pendientes
   public const _TAR_LISTAR = "SELECT atp_id id, vtipo.vlc_id tipotareaid, vtipo.vlc_nombre tipotarea, vlc.vlc_codigo alarma, 'Paciente' atenciona, 
-    tid_codigo || '-' || cso_identificacion || ' ' || cso_primer_nombre || coalesce(' '  || cso_primer_apellido,'') dirigidoa,
-    atp.atp_fecha fecha, dgn.esp_id estadopacienteid, vlc_id_nivel_riesgo nivelriesgoid, vlc.vlc_id alarmaid
-    FROM oper.atp_atencion_pendiente atp
-    inner join oper.cso_caso cso on cso.cso_id = atp.cso_id
-    inner join conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
-    inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma(cso.cso_id)
-    inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 51 and vtipo.cat_id = 14
-    inner join seg.rou_rol_usuario rou on rou.tus_id = 6 and rou_entidadid = cso.eap_id
-    left join oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
-    left join oper.dgn_diagnostico dgn on dgn.dgn_id = sgm.dgn_id
-    left join oper.esp_estado_paciente esp on esp.esp_id = dgn.esp_id
-    where atp_fecha_eapb is null and rou.usr_id = :usuario
-    union all
-    SELECT atp_id id, vtipo.vlc_id tipotareaid, vtipo.vlc_nombre tipotarea, vlc.vlc_codigo alarma, 'Paciente' atenciona, 
       tid_codigo || '-' || cso_identificacion || ' ' || cso_primer_nombre || coalesce(' '  || cso_primer_apellido,'') dirigidoa,
-      atp.atp_fecha fecha, dgn.esp_id estadopacienteid, vlc_id_nivel_riesgo nivelriesgoid, vlc.vlc_id alarmaid
+      atp.atp_fecha fecha, dgn.esp_id estadopacienteid, vlc_id_nivel_riesgo nivelriesgoid, vlc.vlc_id alarmaid, cso.cso_id casoid
       FROM oper.atp_atencion_pendiente atp
       inner join oper.cso_caso cso on cso.cso_id = atp.cso_id
       inner join conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
-      inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma(cso.cso_id)
+      inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma_fecha(atp_fecha)
+      inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 51 and vtipo.cat_id = 14
+      inner join seg.rou_rol_usuario rou on rou.tus_id = 6 and rou_entidadid = cso.eap_id
+      left join oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
+      left join oper.dgn_diagnostico dgn on dgn.dgn_id = sgm.dgn_id
+      left join oper.esp_estado_paciente esp on esp.esp_id = dgn.esp_id
+      where atp_fecha_eapb is null and rou.usr_id = :usuario --tareas de solicitud a atención de la EAPB
+    union all 
+    SELECT atp_id id, vtipo.vlc_id tipotareaid, vtipo.vlc_nombre tipotarea, vlc.vlc_codigo alarma, 'Paciente' atenciona, 
+      tid_codigo || '-' || cso_identificacion || ' ' || cso_primer_nombre || coalesce(' '  || cso_primer_apellido,'') dirigidoa,
+      atp.atp_fecha fecha, dgn.esp_id estadopacienteid, vlc_id_nivel_riesgo nivelriesgoid, vlc.vlc_id alarmaid, cso.cso_id casoid
+      FROM oper.atp_atencion_pendiente atp
+      inner join oper.cso_caso cso on cso.cso_id = atp.cso_id
+      inner join conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
+      inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma_fecha(atp_fecha_eapb)
       inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 52 and vtipo.cat_id = 14
       inner join oper.rpc_responsable_caso rpc on rpc.cso_id = cso.cso_id
       left join oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
       left join oper.dgn_diagnostico dgn on dgn.dgn_id = sgm.dgn_id
       left join oper.esp_estado_paciente esp on esp.esp_id = dgn.esp_id
-      where (not atp_fecha_eapb is null) and atp_fecha_confirmacion is null and rpc_activo = true and rpc.rps_id = :usuario
-    order by 7 asc";
+      where (not atp_fecha_eapb is null) and atp_fecha_confirmacion is null 
+        and rpc_activo = true and rpc.rps_id = :usuario --tareas de solicitud a atención confirmacion por parte del responsable
+    union all
+    SELECT pxe_id id, vtipo.vlc_id tipotareaid, vtipo.vlc_nombre tipotarea, vlc.vlc_codigo alarma, 'Paciente' atenciona, 
+      tid_codigo || '-' || cso_identificacion || ' ' || cso_primer_nombre || coalesce(' '  || cso_primer_apellido,'') dirigidoa,
+      pxe.pxe_fecha fecha, dgn.esp_id estadopacienteid, vlc_id_nivel_riesgo nivelriesgoid, vlc.vlc_id alarmaid, cso.cso_id casoid
+    FROM oper.cso_caso cso 
+    INNER JOIN oper.rpc_responsable_caso rpc on rpc.cso_id = cso.cso_id and rpc.rpc_activo = true
+      INNER JOIN conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
+      INNER JOIN oper.sgm_seguimiento sgm ON sgm.sgm_id = cso.sgm_id_ultimo
+      LEFT JOIN oper.dgn_diagnostico dgn on dgn.dgn_id = sgm.dgn_id
+      INNER JOIN oper.pxe_proxima_evaluacion pxe ON pxe.sgm_id = sgm.sgm_id
+      INNER JOIN conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma_fecha(pxe_fecha)
+      INNER JOIN conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 67 and vtipo.cat_id = 14 
+      LEFT JOIN oper.esp_estado_paciente esp on esp.esp_id = dgn.esp_id
+    where rpc.rps_id = :usuario and (pxe_fecha_programada is null) --tareas de confirmar programacion atención proximo seguimiento
+    union all
+    SELECT sgm_id id, vtipo.vlc_id tipotareaid, vtipo.vlc_nombre tipotarea, vlc.vlc_codigo alarma, 'Paciente' atenciona, 
+      tid_codigo || '-' || cso_identificacion || ' ' || cso_primer_nombre || coalesce(' '  || cso_primer_apellido,'') dirigidoa,
+      sgm_fecha fecha, dgn.esp_id estadopacienteid, vlc_id_nivel_riesgo nivelriesgoid, vlc.vlc_id alarmaid, cso.cso_id casoid
+    FROM oper.cso_caso cso 
+    INNER JOIN oper.rpc_responsable_caso rpc on rpc.cso_id = cso.cso_id and rpc.rpc_activo = true
+      INNER JOIN conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
+      INNER JOIN oper.sgm_seguimiento sgm ON sgm.cso_id = cso.cso_id
+      INNER JOIN oper.dgn_diagnostico dgn on dgn.dgn_id = sgm.dgn_id
+      INNER JOIN conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma_fecha(sgm_fecha)
+      INNER JOIN conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 68 and vtipo.cat_id = 14 
+      LEFT JOIN oper.esp_estado_paciente esp on esp.esp_id = dgn.esp_id
+    where (sgm_fecha_valoracion is null) and rpc.rps_id = :usuario  --tareas de valorar seguimiento médico realizado
+    UNION ALL
+    SELECT ntf_id id, vtipo.vlc_id tipotareaid, vtipo.vlc_nombre tipotarea, vlc.vlc_codigo alarma, 'Médico' atenciona, 
+      tid_codigo || '-' || usr_identificacion || ' ' || usr_primer_nombre || coalesce(' '  || usr_primer_apellido,'') dirigidoa,
+      usr.usr_fecha_creacion fecha, 0 estadopacienteid, 0 nivelriesgoid, vlc.vlc_id alarmaid, 0 casoid
+      FROM oper.ntf_notificador ntf
+	  INNER JOIN seg.usr_usuario usr on usr.usr_id = ntf.ntf_id
+	  INNER JOIN conf.prg_parametro_general prg on prg.prg_id = 12 and prg_valor = '1'
+      inner join conf.tid_tipo_identificacion tid on tid.tid_id = usr.tid_id
+      inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma_fecha(usr_fecha_creacion)
+      inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 53 and vtipo.cat_id = 14
+      inner join seg.rou_rol_usuario rou on rou.tus_id = 5 and rou.usr_id = usr.usr_id
+      where ntf_resultado_validacion is null --and usr_fecha_creacion >= prg_fecha_auditoria
+	  and rou.usr_id = :usuario
+    order by 7 asc"; 
   //Obtener solicitud atención por id
   public const _ATP_OBTENERXID = "SELECT atp_id id, c.cso_id casoid, rsp_id responsableid, atp_fecha fecha, atp_descripcion descripcion,
     usr_id_eapb usuarioeapbid, atp_fecha_eapb fechaeapb, atp_observacion_eapb observacioneapb,
@@ -251,6 +293,33 @@ class QUERY_OPER {
     INNER JOIN conf.vlc_valor_catalogo vlccat on vlccat.vlc_id = pxe.vlc_id_categoria
     INNER JOIN conf.vlc_valor_catalogo vlctpa on vlctpa.vlc_id = pxe.vlc_id_tipo_atencion
     WHERE pxe.sgm_id = :idseguimiento";
+  //Obtener proximas evaluaciones por caso
+  public const _PXE_LISTARXCASO = "SELECT pxe_id id, sgm.sgm_id seguimientoid, pxe_fecha fecha,
+    usr_id_verificada usuarioverificadaid, pxe_fecha_verificada fechaverificada, pxe_fecha_programada fechaprogramada,
+    pxe.upu_id upgduiid, pxe.vlc_id_categoria categoriaid, pxe.vlc_id_tipo_atencion tipoatencionid, vlccat.vlc_nombre categoria,
+    vlctpa.vlc_nombre tipoatencion, cso.cso_id casoid, dgn_id diagnosticoid
+    FROM oper.cso_caso cso
+    INNER JOIN oper.sgm_seguimiento sgm ON sgm.sgm_id = cso.sgm_id_ultimo
+    INNER JOIN oper.pxe_proxima_evaluacion pxe  ON sgm.sgm_id = pxe.sgm_id
+    INNER JOIN conf.vlc_valor_catalogo vlccat on vlccat.vlc_id = pxe.vlc_id_categoria
+    INNER JOIN conf.vlc_valor_catalogo vlctpa on vlctpa.vlc_id = pxe.vlc_id_tipo_atencion
+    WHERE cso.cso_id =:idcaso";
+  //Obtener proximo seguimiento por su identificador
+  public const _PXE_OBTENERXID = "SELECT pxe_id id, sgm.sgm_id seguimientoid, pxe_fecha fechaprogramada,
+    pxe.vlc_id_categoria categoriaid, pxe.vlc_id_tipo_atencion tipoatencionid, 
+    vlctpa.vlc_nombre || ' - ' || vlccat.vlc_nombre evaluacion,
+    tid.tid_codigo || '-' || cso_identificacion || ' ' || cso_primer_nombre  || coalesce(' ' || cso_primer_apellido,'') paciente
+    FROM oper.pxe_proxima_evaluacion pxe
+    INNER JOIN oper.sgm_seguimiento sgm ON sgm.sgm_id = pxe.sgm_id
+    INNER JOIN oper.cso_caso cso ON cso.cso_id = sgm.cso_id
+    INNER JOIN conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
+    INNER JOIN conf.vlc_valor_catalogo vlccat on vlccat.vlc_id = pxe.vlc_id_categoria
+    INNER JOIN conf.vlc_valor_catalogo vlctpa on vlctpa.vlc_id = pxe.vlc_id_tipo_atencion
+    WHERE pxe.pxe_id =:id";
+  //Confirmar la programación de la cita por parte del responsable
+  public const _PXE_CONFIRMARPROGRAMACION = "UPDATE oper.pxe_proxima_evaluacion SET 
+    usr_id_verificada = :usuario, pxe_fecha_verificada = current_timestamp, pxe_fecha_programada = :fecha,
+    upu_id = :upgduiid where pxe_id = :id";
   //listar Responsables
   public const _CSO_LISTARRESPONSABLES = "SELECT rps_id id, tid.tid_codigo || ' ' || usr.usr_identificacion || ' ' || usr.usr_primer_nombre || ' ' || 
       usr.usr_primer_apellido responsable
@@ -294,7 +363,7 @@ class QUERY_OPER {
   public const _CSO_CONSULTAR_REPORTE_GERENCIAL = "SELECT alarma, riesgo, count(*) cantidad, ubicacion, diagnostico, edad, estado
     FROM (
       SELECT a.vlc_codigo alarma, r.vlc_codigo riesgo, 
-          dvp_nombre || ' - ' || mnc_nombre ubicacion,
+          pai_nombre|| '-' || coalesce(dvp_nombre, cso_divipol) || '-' || mnc_nombre ubicacion,
           d.vlc_nombre diagnostico, 
           case when not cso.cso_nacido then 'No nacido'
           else
@@ -307,6 +376,7 @@ class QUERY_OPER {
           end edad, 
           e.esp_nombre estado
           FROM oper.cso_caso cso
+		  INNER JOIN conf.pai_pais pai on pai.pai_id = cso.pai_id
           LEFT JOIN conf.dvp_divipola dvp on dvp.dvp_id = cso.dvp_id
           LEFT JOIN conf.mnc_municipio mnc on mnc.mnc_id = cso.mnc_id
           INNER JOIN conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
@@ -415,5 +485,43 @@ class QUERY_OPER {
             )
           )
     ) T GROUP BY alerta";
-
+  //Activar caso
+  public const _CSO_ACTIVAR = "UPDATE oper.cso_caso set cso_activo = true, vlc_id_causal_inactivo = null, usr_id_auditoria = :usuario, 
+    cso_fecha_auditoria = current_timestamp
+    where cso_id = :id RETURNING cso_id id, cso_identificacion identificacion,  
+    cso_primer_nombre || coalesce(' ' || cso_primer_apellido, '') nombre";
+  //Inactivar caso
+  public const _CSO_INACTIVAR = "UPDATE oper.cso_caso set cso_activo = false, vlc_id_causal_inactivo = :causalid, usr_id_auditoria = :usuario, 
+    cso_fecha_auditoria = current_timestamp
+    where cso_id = :id RETURNING cso_id id, cso_identificacion identificacion,  
+    cso_primer_nombre || coalesce(' ' || cso_primer_apellido, '') nombre";
+  //Obtener seguimiento por id
+  public const _SGM_OBTENERXID = "SELECT sgm.sgm_id id, sgm.rps_id responsableid, sgm_observacion observacionasistente,
+      sgm.ntf_id medicoid, ntf.usr_identificacion || ' ' || ntf.usr_primer_nombre || ' ' || ntf.usr_primer_apellido medico,
+      usr.usr_primer_nombre || ' ' || usr.usr_primer_apellido || '-' 
+                            || to_char(sgm.sgm_fecha_creacion, 'YYYY-MM-DD HH:MI:SSPM')  auditoria, vlc_id_tipo_atencion tipoatencionid,
+      sgm_fecha fecha, sgm.mnc_id municipioid, sgm.upu_id upgduiid, upu.upu_nombre upgdui, sgm_situacion situacionactual,
+      sgm_fecha_programada fechaprogramada, sgm.upu_id_confirma_atencion upgduiidconfirmatencion, upuca.upu_nombre upgduiconfirmatencion,
+      rpsca.usr_primer_nombre || ' ' || rpsca.usr_primer_apellido || '-' 
+                            || to_char(sgm.sgm_fecha_confirma_atencion, 'YYYY-MM-DD HH:MI:SSPM')	auditoriaconfirmatencion,
+      vlc_id_nivel_satisfaccion nivelsatisfaccionid, sgm_desc_valoracion descripcionvaloracion, 
+      rpsval.usr_primer_nombre || ' ' || rpsval.usr_primer_apellido || '-' 
+                            || to_char(sgm.sgm_fecha_valoracion, 'YYYY-MM-DD HH:MI:SSPM') auditoriavaloracion 
+       FROM oper.sgm_seguimiento sgm
+      INNER JOIN seg.usr_usuario ntf on ntf.usr_id = sgm.ntf_id
+      INNER JOIN seg.usr_usuario usr on usr.usr_id = sgm.usr_id_creacion
+      LEFT JOIN conf.upu_upgd_ui upu on upu.upu_id = sgm.upu_id
+      LEFT JOIN seg.usr_usuario rpsca on rpsca.usr_id = sgm.rps_id_confirma_atencion
+      LEFT JOIN conf.upu_upgd_ui upuca on upuca.upu_id = sgm.upu_id_confirma_atencion
+      LEFT JOIN seg.usr_usuario rpsval on rpsval.usr_id = sgm.rps_id_valoracion
+    WHERE sgm_id = :id";
+  //Establecer  valoración seguimiento
+  public const _SGM_CONFIRMAR = "UPDATE oper.sgm_seguimiento SET sgm_fecha_valoracion = current_timestamp, 
+    vlc_id_nivel_satisfaccion = :nivelsatisfaccionid, sgm_desc_valoracion=:descripcionvaloracion
+    WHERE sgm_id = :id";
+  //Obtener casos por notificador registrado en auditoria
+  public const _CSO_OBTENERXNOTIFICADOR = "SELECT cso_id id, tid_codigo || ' ' || cso_identificacion identificacion,
+    cso_primer_nombre || coalesce(' ' || cso_primer_apellido, '') nombre, cso_fecha_ingreso fechaingreso
+    FROM oper.cso_caso cso INNER JOIN conf.tid_tipo_identificacion tid ON tid.tid_id = cso.tid_id
+    WHERE cso.usr_id_auditoria = :notificadorid";
 }

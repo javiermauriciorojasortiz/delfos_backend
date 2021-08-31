@@ -18,22 +18,10 @@ use App\Http\Controllers\API\Operacion\TareaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-// Route::get('consultarusuarios/{id}', [UsuarioController::class, 'buscar']);
 //----------------------------------------------------------------------------------------
 //Seguridad
 //----------------------------------------------------------------------------------------
@@ -61,6 +49,7 @@ Route::get('obtenerresponsable', [UsuarioController::class, 'obtenerResponsable'
 Route::get('obtenerresponsableporidentificacion', [UsuarioController::class, 'obtenerResponsablePorIdentificacion']);
 Route::get('autenticarporsesiontemporal', [UsuarioController::class, 'autenticarPorSesionTemporal']);
 Route::post('consultarparticipantes', [UsuarioController::class, 'consultarParticipantes']);
+Route::post('validarnotificador', [UsuarioController::class, 'validarNotificador']);
 //Auditoría
 Route::post('consultarauditoria', [AuditoriaController::class, 'consultarAuditoria']);
 Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAuditoria']);
@@ -118,11 +107,18 @@ Route::post('establecerpaciente', [CasoController::class, 'establecerPaciente'])
 Route::get('obtenercasoporid', [CasoController::class, 'obtenerCasoPorID']);
 Route::get('listarhistoricopaciente', [CasoController::class, 'listarHistoricoPaciente']);
 Route::get('obtenerresponsablesxcaso', [CasoController::class, 'obtenerResponsablesxCaso']);
+Route::post('activarinactivarcaso', [CasoController::class, 'activarInactivarCaso']);
+Route::get('obtenercasosnotificador', [CasoController::class, 'obtenerCasosNotificador']);
 //Seguimiento
 Route::get('listarseguimientosporcaso', [SeguimientoController::class, 'listarPorCaso']);
 Route::post('establecerseguimiento', [SeguimientoController::class, 'establecerSeguimiento']);
 Route::get('obtenerdiagnosticoporid',  [SeguimientoController::class, 'obtenerDiagnosticoPorID']);
 Route::get('listarproximasevaluaciones',  [SeguimientoController::class, 'listarProximasEvaluaciones']);
+Route::get('obtenerseguimientoporid',  [SeguimientoController::class, 'obtenerSeguimientoPorID']);
+Route::post('establecerconfirmacionseguimiento', [SeguimientoController::class, 'establecerConfirmacionSeguimiento']);
+Route::get('listarseguimientosproximosporcaso',  [SeguimientoController::class, 'listarSeguimientosProximosPorCaso']);
+Route::get('obtenerproximoseguimientoporid',  [SeguimientoController::class, 'obtenerProximoSeguimientoPorID']);
+Route::post('confirmarprogramacionpxe',  [SeguimientoController::class, 'confirmarProgramacionProximaEvaluacion']);
 //Solicitud ayuda
 Route::get('listarsolicitudesporcaso', [SolicitudAyudaController::class, 'listarPorCaso']);
 Route::post('crearsolicitudatencion', [SolicitudAyudaController::class, 'crearSolicitudAyuda']);

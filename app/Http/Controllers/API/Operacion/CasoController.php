@@ -77,4 +77,25 @@ class CasoController extends Controller
     $Caso = new Caso($request, ENUM_OPC::OPCION_GENERAL);
     return $Caso->obtenerResponsablesxCaso();
   }
+  //Activar inactivar caso
+  function activarInactivarCaso(Request $request){
+    $Caso = new Caso($request, ENUM_OPC::OPCION_GENERAL);
+    $rta = null;
+    try {
+      if($Caso->parametros['causalid']==0){
+        $Caso->activarCaso();
+      } else {
+        $Caso->inactivarCaso();
+      }
+      $rta = array("codigo" => 1, "descripcion" => "Exitoso");
+    } catch (Exception $e) {
+      $rta = array("codigo" => 0, "descripcion" => $e->getMessage());
+    }
+    return $rta;
+  }
+  //Consultar casos reportados notificador
+  function obtenerCasosNotificador(Request $request){
+    $Caso = new Caso($request, ENUM_OPC::MIS_TAREAS);
+    return $Caso->obtenerCasosNotificador();
+  }
 }

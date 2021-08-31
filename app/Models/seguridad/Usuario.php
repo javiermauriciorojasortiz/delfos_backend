@@ -223,4 +223,11 @@ class Usuario extends Core {
       $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::PARTICIPANTE, $observacion, true, "C", ""); 
       return $rta;
     }
+    // //Validar Notificador
+    // public function validarNotificador() {
+    //   $rta = $this->obtenerResultset(QUERY_SEG::_NTF_VALIDAR);
+    //   $observacion = "Consultar Participantes";
+    //   $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::PARTICIPANTE, $observacion, true, "C", ""); 
+    //   return $rta;
+    // }
 }

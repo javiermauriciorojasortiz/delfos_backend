@@ -49,8 +49,11 @@ class Notificador extends APPBASE {
     return $rta;
   }
 
-  //Establece el notificador y retorna el número
+  //Establece validacion del notificador y retorna el número
   public function validarNotificador(){
+      if($this->parametros["estado"]==false){
+        $this->actualizarData(QUERY_SEG::_USR_INACTIVAR, array("id"=>$this->parametros["id"]));
+      }
       return $this->actualizarData(QUERY_SEG::_NTF_VALIDAR, $this->listarParamRequeridos(), true);
   }
 }
