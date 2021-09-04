@@ -97,6 +97,7 @@ Route::post('consultarupgduis', [UPGDUIController::class, 'consultarUPGDUIs']);
 Route::post('establecerupgdui', [UPGDUIController::class, 'establecerUPGDUI']);
 Route::get('eliminarupgdui', [UPGDUIController::class, 'eliminarUPGDUI']);
 Route::get('listarupgduis', [UPGDUIController::class, 'listarUPGDUIs']);
+Route::post('listarupgduispornombre', [UPGDUIController::class, 'listarUPGDUIsPorNombre']);
 //Contacto
 Route::get('obtenercontactoporid', [ContactoController::class, 'obtenerContactoPorId']);
 //Caso
@@ -134,6 +135,7 @@ Route::post('consultarreportegeografico', [ReporteController::class, 'consultarR
 Route::get('consultarcasosporeapb', [ReporteController::class, 'consultarCasosPorEAPB']);
 Route::post('consultarcasosporestado', [ReporteController::class, 'consultarCasosPorEstado']);
 Route::post('consultarestadoalertacasos', [ReporteController::class, 'consultarEstadoAlertaCasos']);
+Route::post('consultarcasosinterestablero', [ReporteController::class, 'consultarCasosInteresTablero']);
 //Comunicaciones
 Route::post('enviarcorreoscomunicaciones', [ComunicacionController::class, 'enviarCorreos']);
 Route::post('enviarsmsscomunicaciones', [ComunicacionController::class, 'enviarSMSs']);

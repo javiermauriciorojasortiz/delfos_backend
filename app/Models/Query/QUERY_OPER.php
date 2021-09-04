@@ -430,13 +430,13 @@ class QUERY_OPER {
       AND (:secretariaid = 0 or cso.mnc_id = :secretariaid)
       AND (:zonaid = 0 or brr.zna_id = :zonaid)";
   //consultar Casos Por EAPB
-  public const _TBC_CASOS_X_EAPB = "SELECT COUNT(DISTINCT cso.cso_id) cantidad, eap_nombre eapb
+  public const _TBC_CASOS_X_EAPB = "SELECT COUNT(DISTINCT cso.cso_id) cantidad, eap_nombre eapb, eap.eap_id eapbid
       FROM oper.cso_caso cso
     INNER JOIN conf.eap_eapb eap on eap.eap_id = cso.eap_id
     WHERE cso_activo = true AND (:secretariaid = 0 or cso.mnc_id = :secretariaid)
-    GROUP BY eap_nombre;";
+    GROUP BY eap_nombre, eap.eap_id;";
   //consultar Casos Por Estado
-  public const _TBC_CASOS_X_ESTADO = "SELECT COUNT(DISTINCT cso.cso_id) cantidad, esp_nombre estado
+  public const _TBC_CASOS_X_ESTADO = "SELECT COUNT(DISTINCT cso.cso_id) cantidad, esp_nombre estado, esp.esp_id estadopacienteid
       FROM oper.cso_caso cso
     INNER JOIN oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
     INNER JOIN oper.dgn_diagnostico dgn on dgn.dgn_id = sgm.dgn_id
@@ -454,16 +454,15 @@ class QUERY_OPER {
               AND (:secretariaid = 0 OR mnco.mnc_id = :secretariaid)
               )
           )
-    GROUP BY esp_nombre;";  
+    GROUP BY esp_nombre, esp.esp_id;";  
   //consultar Casos Por Estado
-  public const _TBC_CASOS_ESTADO_ALERTA = "SELECT SUM(CASE WHEN tipoatencion = 'EXAMEN' then 1 else 0 end) examen, 
+  public const _TBC_CASOS_ESTADO_ALERTA = "SELECT 
+    SUM(CASE WHEN tipoatencion = 'EXAMEN' then 1 else 0 end) examen, 
     SUM(CASE WHEN tipoatencion = 'CITA' then 1 else 0 end) cita,
     SUM(CASE WHEN tipoatencion = 'CIRUGÍA' then 1 else 0 end) cirugia,
     SUM(CASE WHEN tipoatencion = 'REMISIÓN' then 1 else 0 end) remision,	
-    alerta FROM (
-    SELECT case when DATE_PART('day', pxe_fecha - current_timestamp) < 0 then 'Rojo' --(Atención Roja (Atrasada 1 día)
-          when DATE_PART('day', pxe_fecha - current_timestamp) = 0 then 'Amari' -- Amarilla (Proxima a vencerce 1 día) 
-          else 'Verde' end alerta,  -- Verde (A tiempo))
+    alerta, alertaid  FROM (
+    SELECT vlctalerta.vlc_codigo alerta, vlctalerta.vlc_id alertaid,
       vlcta.vlc_nombre tipoatencion
       FROM oper.cso_caso cso
       INNER JOIN oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
@@ -472,7 +471,8 @@ class QUERY_OPER {
       INNER JOIN conf.mnc_municipio mnco ON mnco.mnc_id = sgm.mnc_id --secretaria ocurrencia
       INNER JOIN oper.pxe_proxima_evaluacion pxe ON pxe.sgm_id = cso.sgm_id_ultimo 
       INNER JOIN conf.vlc_valor_catalogo vlcta ON vlcta.vlc_id = pxe.vlc_id_tipo_atencion
-      WHERE cso_activo = true AND pxe_fecha_verificada is null
+      INNER JOIN conf.vlc_valor_catalogo vlctalerta ON vlctalerta.vlc_id = oper.fncso_alarma_fecha(pxe.pxe_fecha)
+      WHERE cso_activo = true --AND pxe_fecha_verificada is null
         AND (:eapbid = 0 or cso.eap_id = :eapbid)
         AND (:categoriaid = 0 or pxe.vlc_id_categoria = :categoriaid)
         AND (   (:clasificacionid = 1 --residencia
@@ -484,7 +484,50 @@ class QUERY_OPER {
             AND (:secretariaid = 0 OR mnco.mnc_id = :secretariaid)
             )
           )
-    ) T GROUP BY alerta";
+    ) T GROUP BY alerta, alertaid";
+  //Consultar casos de interés tablero
+  public const _CSO_CONSULTAR_CASOS_INTERES_TABLERO = "SELECT cso.cso_id id, a.vlc_codigo alarma, r.vlc_codigo riesgo,
+    tid.tid_codigo || ' ' || cso_identificacion || ' ' || cso_primer_nombre  || coalesce(' ' || cso_primer_apellido,'') paciente,
+    d.vlc_nombre diagnostico, 
+    case when not cso.cso_nacido then 'No nacido'
+      else
+        case when DATE_PART('year', current_timestamp) - DATE_PART('year', cso_fecha_nacido) > 0 
+            then DATE_PART('year', current_timestamp) - DATE_PART('year', cso_fecha_nacido) || ' Años' 
+          when DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido) > 0
+            then DATE_PART('month', current_timestamp) - DATE_PART('month', cso_fecha_nacido) || ' Meses'
+          else DATE_PART('day', current_timestamp - cso_fecha_nacido) || ' Días' 
+        end
+      end edad, 
+    e.esp_nombre estado, cso_fecha_ingreso fechaingreso
+    FROM oper.cso_caso cso
+    INNER JOIN conf.tid_tipo_identificacion tid on tid.tid_id = cso.tid_id
+    LEFT JOIN oper.sgm_seguimiento sgm on sgm.sgm_id = cso.sgm_id_ultimo
+    LEFT JOIN oper.pxe_proxima_evaluacion pxe ON pxe.sgm_id = cso.sgm_id_ultimo 
+    INNER JOIN conf.mnc_municipio mncr ON mncr.mnc_id = cso.mnc_id --secretaria residencia
+    LEFT JOIN conf.mnc_municipio mnco ON mnco.mnc_id = sgm.mnc_id --secretaria ocurrencia
+    LEFT JOIN oper.dgn_diagnostico dgn on dgn.dgn_id = sgm.dgn_id
+    LEFT JOIN conf.vlc_valor_catalogo d on d.vlc_id = dgn.vlc_id_diagnostico_principal
+    LEFT JOIN oper.esp_estado_paciente e on e.esp_id = dgn.esp_id
+    LEFT JOIN conf.vlc_valor_catalogo r on r.vlc_id = e.vlc_id_nivel_riesgo
+    LEFT JOIN conf.vlc_valor_catalogo a on a.vlc_id = oper.fncso_alarma(cso.cso_id)
+    WHERE (:eapbid = 0 or cso.eap_id = :eapbid)
+      AND (:secretariaid = 0 or cso.mnc_id = :secretariaid)
+      AND (:clasificacionid = -1 
+          OR (
+              (:clasificacionid = 1 --residencia
+              AND mncr.mnc_ent_territorial = cast(1 as bit) --entidad territorial
+              AND (:secretariaid = 0 OR mncr.mnc_id = :secretariaid)
+              ) 
+            OR (:clasificacionid = 0 --ocurrencia
+              AND mncr.mnc_ent_territorial = cast(0 as bit) --municipio no es entidad territorial
+              AND (:secretariaid = 0 OR mnco.mnc_id = :secretariaid)
+              )
+            )
+          )
+      AND (:categoriaid = 0 or pxe.vlc_id_categoria = :categoriaid)
+      AND (:estadopacienteid = 0 or e.esp_id = :estadopacienteid)
+      AND (:nivelalarmaid = 0 or a.vlc_id = :nivelalarmaid)  
+      AND (:tipoatencionid = 0 or pxe.vlc_id_tipo_atencion = :tipoatencionid)";
   //Activar caso
   public const _CSO_ACTIVAR = "UPDATE oper.cso_caso set cso_activo = true, vlc_id_causal_inactivo = null, usr_id_auditoria = :usuario, 
     cso_fecha_auditoria = current_timestamp

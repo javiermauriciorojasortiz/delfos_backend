@@ -24,6 +24,11 @@ class UPGDUIController extends Controller
     $UPGDUI = new UPGDUI($request, ENUM_OPC::OPCION_GENERAL);
     return $UPGDUI->listarUPGDUIs();
   }
+  //Listar las UPGDUI por parte del nombre 
+  function listarUPGDUIsPorNombre(Request $request){
+    $UPGDUI = new UPGDUI($request, ENUM_OPC::OPCION_GENERAL);
+    return $UPGDUI->listarUPGDUIsPorNombre();
+  }
   //Eliminar la EPAB por id
   function eliminarUPGDUI(Request $request) {
     //Inicializar la respuesta

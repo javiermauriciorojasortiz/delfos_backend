@@ -44,4 +44,9 @@ class Reporte extends APPBASE {
     $rta = $this->obtenerResultset(QUERY_OPER::_TBC_CASOS_ESTADO_ALERTA);
     return $rta;
   }
+  //Consultar casos de interés tablero
+  function consultarCasosInteresTablero(){
+    $rta = $this->obtenerResultset(QUERY_OPER::_CSO_CONSULTAR_CASOS_INTERES_TABLERO);
+    return $rta;
+  }
 }

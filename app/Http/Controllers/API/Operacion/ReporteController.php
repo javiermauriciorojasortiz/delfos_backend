@@ -41,4 +41,9 @@ class ReporteController extends Controller {
     $reporte = new Reporte($request, ENUM_OPC::TABLERO_CONTROL);
     return $reporte->consultarEstadoAlertaCasos();
   }
+  //Casos de interés relacionados al tablero de control
+  function consultarCasosInteresTablero(Request $request){
+    $reporte = new Reporte($request, ENUM_OPC::TABLERO_CONTROL);
+    return $reporte->consultarCasosInteresTablero();
+  }
 }

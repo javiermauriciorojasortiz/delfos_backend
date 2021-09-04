@@ -25,6 +25,10 @@ class UPGDUI  extends APPBASE{
   function listarUPGDUIs() {
     return $this->obtenerResultset(QUERY_CONF::_UPU_LISTAR);
   }
+  //Lista las UPGDUI por parte del nombre
+  function listarUPGDUIsPorNombre() {
+    return $this->obtenerResultset(QUERY_CONF::_UPU_LISTARXNOMBRE);
+  }
   //Eliminar la UPGDUI por id
   function eliminarUPGDUI() {
     $lista = $this->obtenerResultset(QUERY_CONF::_UPU_ELIMINAR); 

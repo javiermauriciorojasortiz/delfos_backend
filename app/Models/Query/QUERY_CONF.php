@@ -200,4 +200,7 @@ class QUERY_CONF {
 
   //Listar UPGDs disponibles
   public const _UPU_LISTAR = "SELECT upu_id id, upu_nombre nombre from conf.upu_upgd_ui order by 2";
+  //listar las UPGDs que concuerden con el nombre
+  public const _UPU_LISTARXNOMBRE = "SELECT upu_id id, upu_nombre nombre from conf.upu_upgd_ui 
+    where lower(upu_nombre) like '%'|| lower(:nombre)||'%' and upu_activo = Cast(1 as bit) order by 2";
 }
