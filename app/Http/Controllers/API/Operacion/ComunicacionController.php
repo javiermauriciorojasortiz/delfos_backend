@@ -27,8 +27,8 @@ class ComunicacionController extends Controller {
   }
   //Enviar las alertas diarias
   function enviarAlertaDiaria(Request $request){
-    $reporte = new Comunicacion($request, ENUM_OPC::OPCION_SIN_SESION);
-    $param = new Parametro($request, ENUM_OPC::OPCION_SIN_SESION);
+    $reporte = new Comunicacion($request, ENUM_OPC::OPCION_GENERAL);
+    $param = new Parametro($request, ENUM_OPC::OPCION_GENERAL);
     //Obtener la fecha de ejecución
     $fechacorreo = $param->obtenerParametroporCodigo("FUCRA")[0]->valor;
     if (($timestamp = strtotime($fechacorreo)) === false) {
