@@ -257,4 +257,14 @@ class UsuarioController extends Controller
         }
         
     }
+    //listar Notificador es Por Nombre
+    public function listarNotificadoresPorNombre(Request  $request){
+        $usuario = new Notificador($request, ENUM_OPC::CONSULTAR_CASO);
+        return $usuario->listarNotificadoresPorNombre();
+    }
+    //Listar usuarios para consulta de auditoria
+    public function listarUsuarios(Request  $request){
+        $usuario = new Usuario($request, ENUM_OPC::AUDITORIA);
+        return $usuario->listarUsuarios();
+    }
 }

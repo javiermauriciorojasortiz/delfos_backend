@@ -59,7 +59,7 @@ class CasoController extends Controller
       return array("codigo" => 1, "descripcion" => "Exitoso");
     } catch(Exception $e) {
       DB::rollBack();
-      return array("codigo" => 0, "descripcion" => $e->__toString());
+      return array("codigo" => 0, "descripcion" => $e->getMessage());
     }
   }
   //Obtener caso por id

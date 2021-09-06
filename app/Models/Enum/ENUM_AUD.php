@@ -24,4 +24,6 @@ class ENUM_AUD {
 	public const TAREA = 18;
 	public const COMUNICACIONES = 19;
 	public const ACTIVAR_INACTIVAR_CASO = 20;
+	public const REPORTES = 21;
+	public const ENVIO_ALERTAS = 22;
 }

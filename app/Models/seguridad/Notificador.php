@@ -56,4 +56,8 @@ class Notificador extends APPBASE {
       }
       return $this->actualizarData(QUERY_SEG::_NTF_VALIDAR, $this->listarParamRequeridos(), true);
   }
+  //Obtener lista de notificadores por nombre
+  public function listarNotificadoresPorNombre(){
+    return $this->obtenerResultset(QUERY_SEG::_NTF_LISTARXNOMBRE, $this->listarParamRequeridos());   
+  }
 }

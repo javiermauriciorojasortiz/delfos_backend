@@ -50,6 +50,8 @@ Route::get('obtenerresponsableporidentificacion', [UsuarioController::class, 'ob
 Route::get('autenticarporsesiontemporal', [UsuarioController::class, 'autenticarPorSesionTemporal']);
 Route::post('consultarparticipantes', [UsuarioController::class, 'consultarParticipantes']);
 Route::post('validarnotificador', [UsuarioController::class, 'validarNotificador']);
+Route::post('listarnotificadorespornombre', [UsuarioController::class, 'listarNotificadoresPorNombre']);
+Route::get('listarusuarios', [UsuarioController::class, 'listarUsuarios']);
 //Auditoría
 Route::post('consultarauditoria', [AuditoriaController::class, 'consultarAuditoria']);
 Route::get('obtenertiposauditoria', [AuditoriaController::class, 'obtenerTiposAuditoria']);
@@ -139,3 +141,4 @@ Route::post('consultarcasosinterestablero', [ReporteController::class, 'consulta
 //Comunicaciones
 Route::post('enviarcorreoscomunicaciones', [ComunicacionController::class, 'enviarCorreos']);
 Route::post('enviarsmsscomunicaciones', [ComunicacionController::class, 'enviarSMSs']);
+Route::get('enviaralertadiaria', [ComunicacionController::class, 'enviarAlertaDiaria']);

@@ -64,6 +64,9 @@ class QUERY_SEG {
     from seg.usr_usuario u left join seg.usr_usuario a on a.usr_id = u.usr_id_auditoria 
     where u.usr_id = :id";
   //Cambiar clave
+  public const _USR_LISTAR = "SELECT usr_identificacion usuario, 
+    usr_identificacion || ' - ' || usr_primer_nombre || ' ' || usr_primer_apellido nombre FROM seg.usr_usuario";
+  //Cambiar clave
   public const _USR_CAMBIARCLAVE = "SELECT * FROM seg.fnusr_actualizarclave(:id,:claveanterior,:clavenueva, :usuario)";
   //Autenticar por usuario y clave
   public const _USR_AUTENTICAR = 'SELECT * FROM seg.fnusr_autenticar(:tipousuario, :emailidentificacion, :clave, :ip)';
@@ -152,6 +155,11 @@ class QUERY_SEG {
     left join seg.usr_usuario b on b.usr_id = n.usr_id_valida 
     INNER JOIN conf.vlc_valor_catalogo vlc on vlc.vlc_id = vlc_id_especialidad
     where u.usr_id = :id";
+  //Obtener lista de notificadores por nombre
+  public const _NTF_LISTARXNOMBRE = "SELECT ntf_id id, u.usr_identificacion || ' - ' || u.usr_primer_nombre || ' ' || u.usr_primer_apellido nombre
+    FROM oper.ntf_notificador n INNER JOIN seg.usr_usuario u on u.usr_id = n.ntf_id 
+    WHERE lower(u.usr_identificacion || ' - ' || u.usr_primer_nombre || ' ' || u.usr_primer_apellido)
+       LIKE '%' || lower(:nombre) || '%' ";
   //Insertar notificador 
   public const _NTF_INSERTAR = "INSERT INTO oper.ntf_notificador(ntf_id, ntf_pregrado, ntf_registro_medico, ntf_autoriza_email, 
     ntf_autoriza_sms, ntf_fecha_auditoria, usr_id_auditoria, vlc_id_especialidad)

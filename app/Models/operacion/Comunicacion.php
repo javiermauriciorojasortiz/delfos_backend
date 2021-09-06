@@ -5,6 +5,8 @@ namespace App\Models\Operacion;
 use App\Mail\msgUsuario;
 use App\Models\APPBASE;
 use App\Models\Enum\ENUM_AUD;
+use App\Models\Query\QUERY_CONF;
+use App\Models\Query\QUERY_OPER;
 use App\Models\Query\QUERY_SEG;
 use Exception;
 use Illuminate\Http\Request;
@@ -63,5 +65,36 @@ class Comunicacion extends APPBASE {
     }
     throw new Exception("No implementado");
     return count($destinos);
+  }
+  //Envío alertas diarias
+  function enviarAlertaDiaria(string $Textomensaje, string $SujetoMensaje){
+    //Obtener contacto por id
+    $destinos = $this->obtenerResultset(QUERY_OPER::_CSO_ALERTA_DIARIA);
+    $errores = "";
+    $enviados = 0;
+    $rta = null;
+    $formatomensaje = $Textomensaje;
+    $textotema = $SujetoMensaje;    
+    foreach ($destinos as $destino){
+      try {
+        $textomensaje = str_replace("{{caso}}", $destino->caso, $formatomensaje);
+        $textomensaje = str_replace("{{tipoalerta}}", $destino->tipoalerta, $textomensaje);
+        $mensaje["texto"] = $textomensaje;
+        Mail::to($destino->email)->send(new msgUsuario($mensaje, $textotema, 'mails.correoGeneral'));
+        $enviados += 1;
+      } catch (Exception $e) {
+        $errores = $errores . $e->getMessage() . "<br>";
+      }
+    }
+    //Actualizando el parámetro de fecha en la base de datos
+    $this->actualizarData(QUERY_CONF::_PRG_ACTUALIZAR, 
+            array("valor" => now()->format('Y-m-d'), "usuario"=> 1, "id" => 14));
+    $observacion = "Se enviaron (" . $enviados . ") correos de (" . count($destinos) . ") encontrados. " . $errores;
+    $rta = array("codigo" => strlen($errores)>0?0:1, 
+    "descripcion" => $observacion);
+    $this->usuarioID = 1;
+    $this->insertarAuditoria(ENUM_AUD::ENVIO_ALERTAS, "Envio masivo alertas", $enviados>0?true:false, "G", 
+    strlen($observacion)>255?substr($observacion, 0, 255):$observacion);
+    return $rta;
   }
 }

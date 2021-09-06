@@ -13,7 +13,7 @@ class QUERY_OPER {
         sgm_id_ultimo ultimoseguimientoid
     FROM oper.cso_caso cso INNER JOIN conf.tid_tipo_identificacion tid ON tid.tid_id = cso.tid_id
     WHERE cso.cso_identificacion = :identificacion
-    OR EXISTS(SELECT 1 FROM oper.csoh_caso_hst WHERE cso_identificacion = :identificacion)
+    OR EXISTS(SELECT 1 FROM oper.csoh_caso_hst h WHERE h.cso_id = cso.cso_id AND cso_identificacion = :identificacion)
     OR EXISTS(SELECT 1 FROM oper.rpc_responsable_caso rpc 
             INNER JOIN seg.usr_usuario rps ON rps.usr_id = rpc.rps_id 
             WHERE cso.cso_id = rpc.cso_id AND usr_identificacion = :identificacion)";
@@ -75,7 +75,7 @@ class QUERY_OPER {
       eap_id, cso_fecha_auditoria, usr_id_auditoria, cso_nacido, cso_activo, cso_municipio, cso_longitud, cso_latitud)
     VALUES (nextval('oper.seqcso'), :tipoidentificacionid, :identificacion, :primer_nombre, :segundo_nombre, :primer_apellido,	
       :segundo_apellido, :fecha_nacido, :semana, :paisid, :departamento, :departamentoid, :municipioid, :barrio, :barrioid, :direccion,
-      :eapbid, current_timestamp, :usuario, :nacido, true, :municipio, :lng, :lan) RETURNING cso_id;";
+      :eapbid, current_timestamp, :usuario, :nacido, true, :municipio, :lng, :lat) RETURNING cso_id;";
   //Actualizar caso general
   public const _CSO_ACTUALIZAR = "UPDATE oper.cso_caso SET tid_id=:tipoidentificacionid, cso_identificacion=:identificacion, cso_primer_nombre=:primer_nombre, 
     cso_segundo_nombre=:segundo_nombre, cso_primer_apellido=:primer_apellido, cso_segundo_apellido=:segundo_apellido,
@@ -97,10 +97,14 @@ class QUERY_OPER {
     esp_id estadopacienteid FROM oper.dgn_diagnostico dgn
     INNER JOIN seg.usr_usuario ntf On ntf.usr_id = dgn.usr_id_auditoria WHERE dgn_id = :id;";
   //Verificar existencia diagnóstico
-  public const _DGN_EXISTE = "SELECT 1 existe FROM oper.dgn_diagnostico 
-    WHERE vlc_id_tipo_defecto=:tipodefectoid AND vlc_id_cardiopatia=:cardiopatiaid AND
-      vlc_id_tipo_defecto_otro=:tipodefectootroid AND vlc_id_diagnostico_principal=:diagnosticoprincipalid AND
-      vlc_id_diagnostico_secundario=:diagnosticosecundarioid AND esp_id=:estadopacienteid AND dgn_id = :id";
+  public const _DGN_EXISTE = "SELECT CASE WHEN EXISTS(SELECT 1 FROM oper.dgn_diagnostico 
+    WHERE vlc_id_tipo_defecto=:tipodefectoid 
+      AND vlc_id_cardiopatia=:cardiopatiaid 
+      AND COALESCE(vlc_id_tipo_defecto_otro,0)=COALESCE(:tipodefectootroid,0)
+      AND vlc_id_diagnostico_principal=:diagnosticoprincipalid 
+      AND COALESCE(vlc_id_diagnostico_secundario,0)=COALESCE(:diagnosticosecundarioid,0)
+      AND esp_id=:estadopacienteid AND dgn_id = :id) 
+      THEN 1 ELSE 0 END existe";
   //Actualizar diagnostico
   public const _DGN_ACTUALIZAR = "UPDATE oper.dgn_diagnostico SET 
     ntf_id=:notificadorid, vlc_id_tipo_defecto=:tipodefectoid, vlc_id_cardiopatia=:cardiopatiaid,
@@ -358,7 +362,13 @@ class QUERY_OPER {
       AND (:secretariaid = 0 or cso.mnc_id = :secretariaid)
       AND (:upgduiid = 0 or EXISTS(SELECT 1 FROM oper.sgm_seguimiento s 
                                         WHERE s.cso_id = cso.cso_id and s.upu_id = :upgduiid)
-          )";
+          )
+      AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
+              AND (tus_id = 5 --Gerencia global
+                or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+                or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
+              )
+            )";
   //Consultar reporte gerencial
   public const _CSO_CONSULTAR_REPORTE_GERENCIAL = "SELECT alarma, riesgo, count(*) cantidad, ubicacion, diagnostico, edad, estado
     FROM (
@@ -396,13 +406,19 @@ class QUERY_OPER {
             AND (:upgduiid = 0 or EXISTS(SELECT 1 FROM oper.sgm_seguimiento s 
                                               WHERE s.cso_id = cso.cso_id and s.upu_id = :upgduiid)
                 )
+            AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
+              AND (tus_id = 5 --Gerencia global
+                or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+                or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
+              )
+            )
     ) T
     GROUP BY alarma, riesgo, ubicacion, diagnostico, edad, estado";
   //Consulta Geográfica
   public const _CSO_CONSULTAR_REPORTE_GEOGRAFICO = "SELECT cso.cso_id id,
     tid.tid_codigo || ' ' || cso_identificacion identificacion,
     cso_primer_nombre  || coalesce(' ' || cso_primer_apellido,'') nombre,
-    d.vlc_nombre diagnostico, r.vlc_codigo nivelriesgo,
+    d.vlc_nombre diagnostico, coalesce(r.vlc_codigo, 'Verde') nivelriesgo,
     case when not cso.cso_nacido then 'No nacido'
       else
         case when DATE_PART('year', current_timestamp) - DATE_PART('year', cso_fecha_nacido) > 0 
@@ -428,12 +444,24 @@ class QUERY_OPER {
       AND (:nivelriesgoid = 0 or r.vlc_id = :nivelriesgoid)
       AND (:nivelalarmaid = 0 or a.vlc_id = :nivelalarmaid)
       AND (:secretariaid = 0 or cso.mnc_id = :secretariaid)
-      AND (:zonaid = 0 or brr.zna_id = :zonaid)";
+      AND (:zonaid = 0 or brr.zna_id = :zonaid)
+      AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
+                  AND (tus_id = 5 --Gerencia global
+                    or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+                    or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
+                  )
+                )";
   //consultar Casos Por EAPB
   public const _TBC_CASOS_X_EAPB = "SELECT COUNT(DISTINCT cso.cso_id) cantidad, eap_nombre eapb, eap.eap_id eapbid
       FROM oper.cso_caso cso
     INNER JOIN conf.eap_eapb eap on eap.eap_id = cso.eap_id
     WHERE cso_activo = true AND (:secretariaid = 0 or cso.mnc_id = :secretariaid)
+    AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
+                  AND (tus_id = 5 --Gerencia global
+                    or (tus_id = 8 and cso.mnc_id = rou_entidadid) --Gerencial secretaria
+                    or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
+                  )
+                )
     GROUP BY eap_nombre, eap.eap_id;";
   //consultar Casos Por Estado
   public const _TBC_CASOS_X_ESTADO = "SELECT COUNT(DISTINCT cso.cso_id) cantidad, esp_nombre estado, esp.esp_id estadopacienteid
@@ -454,6 +482,12 @@ class QUERY_OPER {
               AND (:secretariaid = 0 OR mnco.mnc_id = :secretariaid)
               )
           )
+      AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
+              AND (tus_id = 5 --Gerencia global
+                or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+                or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
+              )
+            )
     GROUP BY esp_nombre, esp.esp_id;";  
   //consultar Casos Por Estado
   public const _TBC_CASOS_ESTADO_ALERTA = "SELECT 
@@ -484,6 +518,12 @@ class QUERY_OPER {
             AND (:secretariaid = 0 OR mnco.mnc_id = :secretariaid)
             )
           )
+        AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
+                AND (tus_id = 5 --Gerencia global
+                  or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+                  or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
+                )
+              )
     ) T GROUP BY alerta, alertaid";
   //Consultar casos de interés tablero
   public const _CSO_CONSULTAR_CASOS_INTERES_TABLERO = "SELECT cso.cso_id id, a.vlc_codigo alarma, r.vlc_codigo riesgo,
@@ -527,7 +567,13 @@ class QUERY_OPER {
       AND (:categoriaid = 0 or pxe.vlc_id_categoria = :categoriaid)
       AND (:estadopacienteid = 0 or e.esp_id = :estadopacienteid)
       AND (:nivelalarmaid = 0 or a.vlc_id = :nivelalarmaid)  
-      AND (:tipoatencionid = 0 or pxe.vlc_id_tipo_atencion = :tipoatencionid)";
+      AND (:tipoatencionid = 0 or pxe.vlc_id_tipo_atencion = :tipoatencionid)
+      AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
+                  AND (tus_id = 5 --Gerencia global
+                    or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+                    or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
+                  )
+                )";
   //Activar caso
   public const _CSO_ACTIVAR = "UPDATE oper.cso_caso set cso_activo = true, vlc_id_causal_inactivo = null, usr_id_auditoria = :usuario, 
     cso_fecha_auditoria = current_timestamp
@@ -567,4 +613,20 @@ class QUERY_OPER {
     cso_primer_nombre || coalesce(' ' || cso_primer_apellido, '') nombre, cso_fecha_ingreso fechaingreso
     FROM oper.cso_caso cso INNER JOIN conf.tid_tipo_identificacion tid ON tid.tid_id = cso.tid_id
     WHERE cso.usr_id_auditoria = :notificadorid";
+  //Consultas de alertas diarias
+  public const _CSO_ALERTA_DIARIA = "SELECT usr_email email, caso, tipoalerta FROM (
+      SELECT cso_identificacion || ' - ' || cso_primer_nombre || coalesce(' ' || cso_primer_apellido, '') caso,
+        'Seguimiento programado vencido' tipoalerta, cso.mnc_id, cso.eap_id
+        FROM oper.cso_caso cso WHERE oper.fncso_alarma(cso.cso_id) = 45	and cso.cso_activo = true
+      UNION
+      SELECT cso_identificacion || ' - ' || cso_primer_nombre || coalesce(' ' || cso_primer_apellido, '') caso,
+        'Solicitud de Atención Vencida' tipoalerta, cso.mnc_id, cso.eap_id
+        from oper.atp_atencion_pendiente atp 
+        INNER JOIN oper.cso_caso cso ON atp.cso_id = cso.cso_id 
+        WHERE cso.cso_activo = true AND atp_fecha_eapb is null and atp_fecha_confirmacion is null
+      ) T
+    INNER JOIN seg.rou_rol_usuario rou on (tus_id = 5 --Gerencia global
+          or (tus_id = 8 and mnc_id = rou_entidadid) --Gerencial secretaria
+          or (tus_id = 10 and eap_id = rou_entidadid)) --Gerencial EAPB
+    INNER JOIN seg.usr_usuario usr on rou.usr_id = usr.usr_id";
 }
