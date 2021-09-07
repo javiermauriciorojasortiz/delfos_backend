@@ -44,13 +44,14 @@ class CasoController extends Controller
         unset($paramsUsuario["tiporelacionprincipalid"]);
         $idUsuario = $Usuario->establecerUsuario($paramsUsuario);
         //Se verifica si está en registro
-        if(!$paramsUsuario["id"]>0) {
+        $nuevo = (!$paramsUsuario["id"]>0);
+        if($nuevo){
           $params = array("emailidentificacion"=> $paramsUsuario["email"], 
                           "tipousuario"=> 1,
                           "metodoautenticacion"=> 3);
           $Usuario->enviarCorreo($params);
         }
-        $Responsable->establecerResponsable($idUsuario, $paramsUsuario["id"]>0?0:1);
+        $Responsable->establecerResponsable($idUsuario, $nuevo);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, true);
       }
       //Si debe modificarse el usuario secundario
@@ -60,13 +61,14 @@ class CasoController extends Controller
         unset($paramsUsuario["tiporelacionprincipalid"]);
         $idUsuario = $Usuario->establecerUsuario($paramsUsuario);
         //Se verifica si está en registro
-        if(!$paramsUsuario["id"]>0) {
+        $nuevo = (!$paramsUsuario["id"]>0);
+        if($nuevo) {
           $params = array("emailidentificacion"=> $paramsUsuario["email"], 
                           "tipousuario"=> 1,
                           "metodoautenticacion"=> 3);
           $Usuario->enviarCorreo($params);
         }
-        $Responsable->establecerResponsable($idUsuario, $paramsUsuario["id"]>0?0:1);
+        $Responsable->establecerResponsable($idUsuario, $nuevo);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, false);
       }
       DB::commit();

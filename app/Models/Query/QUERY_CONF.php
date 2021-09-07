@@ -172,7 +172,7 @@ class QUERY_CONF {
           from conf.prg_parametro_general p where LOWER(prg_codigo) like '%' || LOWER(coalesce(:codigo,'')) || '%'";
   //Consultar upgd ui
   public const _UPU_CONSULTAR = "SELECT upu_id id, upu_codigo codigo, upu_nombre nombre, upu_activo activo, 
-    mnc_codigo || '-' || mnc_nombre municipio, v.vlc_nombre subred, v.vlc_id subredid, n.vlc_nombre nivel,
+    mnc_nombre municipio, v.vlc_nombre subred, v.vlc_id subredid, n.vlc_nombre nivel,
     case when upu_esupgd = CAST (1 as bit) then 'UPGD' else 'UI' end tipo, upu_esupgd esupgd, ctt_id_principal contactoprincipalid,
     ctt_id_secundario contactosecundarioid, dvp_id departamentoid, m.mnc_id municipioid, n.vlc_id nivelid, upu_direccion direccion,
     usr_primer_nombre || ' ' || usr_primer_apellido || ' ' || to_char(e.upu_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM') auditoria
