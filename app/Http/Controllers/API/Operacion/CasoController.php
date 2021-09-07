@@ -43,6 +43,13 @@ class CasoController extends Controller
         $tiporelacionid = $paramsUsuario["tiporelacionprincipalid"];
         unset($paramsUsuario["tiporelacionprincipalid"]);
         $idUsuario = $Usuario->establecerUsuario($paramsUsuario);
+        //Se verifica si está en registro
+        if(!$paramsUsuario["id"]>0) {
+          $params = array("emailidentificacion"=> $paramsUsuario["email"], 
+                          "tipousuario"=> 1,
+                          "metodoautenticacion"=> 3);
+          $Usuario->enviarCorreo($params);
+        }
         $Responsable->establecerResponsable($idUsuario, $paramsUsuario["id"]>0?0:1);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, true);
       }
@@ -52,6 +59,13 @@ class CasoController extends Controller
         $tiporelacionid = $paramsUsuario["tiporelacionprincipalid"];
         unset($paramsUsuario["tiporelacionprincipalid"]);
         $idUsuario = $Usuario->establecerUsuario($paramsUsuario);
+        //Se verifica si está en registro
+        if(!$paramsUsuario["id"]>0) {
+          $params = array("emailidentificacion"=> $paramsUsuario["email"], 
+                          "tipousuario"=> 1,
+                          "metodoautenticacion"=> 3);
+          $Usuario->enviarCorreo($params);
+        }
         $Responsable->establecerResponsable($idUsuario, $paramsUsuario["id"]>0?0:1);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, false);
       }

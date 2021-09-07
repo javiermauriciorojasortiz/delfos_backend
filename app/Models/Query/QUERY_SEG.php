@@ -101,9 +101,14 @@ class QUERY_SEG {
       FROM seg.rou_rol_usuario r
       inner join seg.tuo_tipo_usuario_opcion t on t.tus_id = r.tus_id 
       inner join seg.opc_opcion o on o.opc_id = t.opc_id
+    left join oper.ntf_notificador n on n.ntf_id = r.usr_id
+    left join conf.prg_parametro_general p on p.prg_codigo = 'VLDNFT'
       where r.usr_id = :usuario
-      order by coalesce(opc_id_padre, 0) asc, opc_orden asc";
-
+      and (r.tus_id != 1 
+        or coalesce(prg_valor,'0') != '1' 
+        or (r.tus_id = 1 and n.ntf_resultado_validacion = true)
+      )
+    order by coalesce(opc_id_padre, 0) asc, opc_orden asc";
   //Generar clave aleatoria
   public const _USR_GENERARNUEVACLAVE = "SELECT seg.random_string(10)";
   //Obtener estados

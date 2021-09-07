@@ -364,8 +364,9 @@ class QUERY_OPER {
                                         WHERE s.cso_id = cso.cso_id and s.upu_id = :upgduiid)
           )
       AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
-              AND (tus_id = 5 --Gerencia global
-                or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+              AND (tus_id in (3, 5) --Gerencia global
+                or (tus_id = 9 and (cso.mnc_id = rou_entidadid)) --Operador secretaria
+                or (tus_id = 8 and (cso.mnc_id = rou_entidadid)) --Gerencial secretaria
                 or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
               )
             )";
@@ -407,8 +408,9 @@ class QUERY_OPER {
                                               WHERE s.cso_id = cso.cso_id and s.upu_id = :upgduiid)
                 )
             AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
-              AND (tus_id = 5 --Gerencia global
-                or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+              AND (tus_id in (3,5) --Operador y Gerencia global
+                or (tus_id = 8 and (cso.mnc_id = rou_entidadid)) --Gerencial secretaria
+                or (tus_id = 9 and (cso.mnc_id = rou_entidadid)) --Operador secretaria
                 or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
               )
             )
@@ -446,18 +448,19 @@ class QUERY_OPER {
       AND (:secretariaid = 0 or cso.mnc_id = :secretariaid)
       AND (:zonaid = 0 or brr.zna_id = :zonaid)
       AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
-                  AND (tus_id = 5 --Gerencia global
-                    or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
-                    or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
-                  )
-                )";
+              AND (tus_id in (3,5) --Operador y Gerencia global
+                or (tus_id = 8 and (cso.mnc_id = rou_entidadid)) --Gerencial secretaria
+                or (tus_id = 9 and (cso.mnc_id = rou_entidadid)) --Operador secretaria
+                or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
+              )
+            )";
   //consultar Casos Por EAPB
   public const _TBC_CASOS_X_EAPB = "SELECT COUNT(DISTINCT cso.cso_id) cantidad, eap_nombre eapb, eap.eap_id eapbid
       FROM oper.cso_caso cso
     INNER JOIN conf.eap_eapb eap on eap.eap_id = cso.eap_id
     WHERE cso_activo = true AND (:secretariaid = 0 or cso.mnc_id = :secretariaid)
     AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
-                  AND (tus_id = 5 --Gerencia global
+                  AND (tus_id in (5) --Gerencia global
                     or (tus_id = 8 and cso.mnc_id = rou_entidadid) --Gerencial secretaria
                     or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
                   )
@@ -483,8 +486,9 @@ class QUERY_OPER {
               )
           )
       AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
-              AND (tus_id = 5 --Gerencia global
-                or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+              AND (tus_id in (5) --Gerencia global
+                or (tus_id = 8 and ((cso.mnc_id = rou_entidadid and :clasificacionid = 1) 
+                                      or (sgm.mnc_id = rou_entidadid and :clasificacionid = 0))) --Gerencial secretaria
                 or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
               )
             )
@@ -519,8 +523,9 @@ class QUERY_OPER {
             )
           )
         AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
-                AND (tus_id = 5 --Gerencia global
-                  or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+                AND (tus_id in (5) --Operador y Gerencia global
+                  or (tus_id = 8 and ((cso.mnc_id = rou_entidadid and :clasificacionid = 1)
+                                      or (sgm.mnc_id = rou_entidadid and :clasificacionid = 0))) --Gerencial secretaria
                   or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
                 )
               )
@@ -569,8 +574,9 @@ class QUERY_OPER {
       AND (:nivelalarmaid = 0 or a.vlc_id = :nivelalarmaid)  
       AND (:tipoatencionid = 0 or pxe.vlc_id_tipo_atencion = :tipoatencionid)
       AND EXISTS(select 1 from seg.rou_rol_usuario where usr_id = :usuario 
-                  AND (tus_id = 5 --Gerencia global
-                    or (tus_id = 8 and (cso.mnc_id = rou_entidadid or sgm.mnc_id = rou_entidadid)) --Gerencial secretaria
+                  AND (tus_id in (3,5) --Operador y Gerencia global
+                    or (tus_id = 8 and ((cso.mnc_id = rou_entidadid and :clasificacionid = 1)
+                                       or (sgm.mnc_id = rou_entidadid and :clasificacionid = 0))) --Gerencial secretaria
                     or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
                   )
                 )";
@@ -625,7 +631,7 @@ class QUERY_OPER {
         INNER JOIN oper.cso_caso cso ON atp.cso_id = cso.cso_id 
         WHERE cso.cso_activo = true AND atp_fecha_eapb is null and atp_fecha_confirmacion is null
       ) T
-    INNER JOIN seg.rou_rol_usuario rou on (tus_id = 5 --Gerencia global
+    INNER JOIN seg.rou_rol_usuario rou on (tus_id in (3,5) --Operador y Gerencia global
           or (tus_id = 8 and mnc_id = rou_entidadid) --Gerencial secretaria
           or (tus_id = 10 and eap_id = rou_entidadid)) --Gerencial EAPB
     INNER JOIN seg.usr_usuario usr on rou.usr_id = usr.usr_id";

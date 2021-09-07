@@ -66,7 +66,7 @@ class Usuario extends Core {
                     "ip" => $this->variablesServidor["ip"]);
       //throw new Exception(implode("|", $sqlparams)."metodo " . $params["metodoautenticacion"] );
       $data = null;
-      if($params["metodoautenticacion"] == 1 && ($tipousuario == 1 || $tipousuario == 2)) {//usuario nuevo solo puede ser médico o responsable
+      if($params["metodoautenticacion"] == 1 && ($tipousuario == 1)) {//usuario nuevo solo puede ser médico ya no responsable
         $rta = DB::select(QUERY_SEG::_SST_INICIAR,$sqlparams);
         if($rta[0]->sesion == "ESUSUARIO") 
           throw new Exception("El correo pertenece a un usuario registrado. Por favor, contactese con Delfos o seleccione la opción adecuada si se le olvidó la clave");

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Configuracion;
 
 use App\Http\Controllers\Controller;
 use App\Models\Configuracion\Parametro;
+use App\Models\Enum\ENUM_OPC;
 use Illuminate\Http\Request;
 
 class ParametroController extends Controller
@@ -20,7 +21,7 @@ class ParametroController extends Controller
   }
   //Obtener un parámetro por su código
   function obtenerParametroporCodigo(Request $request){
-    $parametro = new Parametro($request, 14);
+    $parametro = new Parametro($request, ENUM_OPC::OPCION_GENERAL);
     return $parametro->obtenerParametroporCodigo();
   }
 }
