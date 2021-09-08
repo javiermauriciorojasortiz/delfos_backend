@@ -259,7 +259,7 @@ class UsuarioController extends Controller
     }
     //listar Notificador es Por Nombre
     public function listarNotificadoresPorNombre(Request  $request){
-        $usuario = new Notificador($request, ENUM_OPC::CONSULTAR_CASO);
+        $usuario = new Notificador($request, ENUM_OPC::OPCION_GENERAL);
         return $usuario->listarNotificadoresPorNombre();
     }
     //Listar usuarios para consulta de auditoria

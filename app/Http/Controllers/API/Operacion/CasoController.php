@@ -68,6 +68,7 @@ class CasoController extends Controller
                           "tipousuario"=> 1,
                           "metodoautenticacion"=> 3);
           $Usuario->enviarCorreo($params);
+          $Usuario->insertarRolUsuario(array("usuarioid"=> $idUsuario,"tipousuarioid"=> 2, "entidadrol"=> 0));
         }
         $Responsable->establecerResponsable($idUsuario, $nuevo);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, false);

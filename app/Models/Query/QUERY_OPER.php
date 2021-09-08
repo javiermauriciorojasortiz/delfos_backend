@@ -24,7 +24,7 @@ class QUERY_OPER {
     cso_segundo_apellido segundo_apellido, cso_nacido nacido, cso_fecha_nacido fecha_nacido, cso_semana semana, 
     pai_id paisid, cso_divipol departamento, cso.dvp_id deptoid, mnc.mnc_id municipioid, cso_municipio municipio,
     cso_barrio barrio, brr_id barrioid, cso_direccion direccion, eap_id eapbid, 
-    case when not cso_fecha_nacido is null then 1 else 0 end nacido,
+    case when  cso_nacido = true then 1 else 0 end nacido,
     sgm_id_ultimo seguimientoid, dgn_id diagnosticoid, cso_latitud lat, cso_longitud lng,
     usr.usr_primer_nombre || ' ' || usr.usr_primer_apellido || '-' 
                           || to_char(cso.cso_fecha_auditoria, 'YYYY-MM-DD HH:MI:SSPM')  auditoria,
