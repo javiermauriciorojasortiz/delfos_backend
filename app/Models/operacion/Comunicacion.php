@@ -89,7 +89,7 @@ class Comunicacion extends APPBASE {
     //Actualizando el parámetro de fecha en la base de datos
     $this->actualizarData(QUERY_CONF::_PRG_ACTUALIZAR, 
             array("valor" => now()->format('Y-m-d'), "usuario"=> 1, "id" => 14));
-    $observacion = "Se enviaron (" . $enviados . ") correos de (" . count($destinos) . ") encontrados. " . $errores;
+    $observacion = utf8_encode("Se enviaron " . $enviados . " correos de " . count($destinos) . " encontrados. " . $errores);
     $rta = array("codigo" => strlen($errores)>0?0:1, 
     "descripcion" => $observacion);
     $this->usuarioID = 1;
