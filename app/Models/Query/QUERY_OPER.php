@@ -244,9 +244,8 @@ class QUERY_OPER {
       inner join conf.tid_tipo_identificacion tid on tid.tid_id = usr.tid_id
       inner join conf.vlc_valor_catalogo vlc on vlc.vlc_id = oper.fncso_alarma_fecha(usr_fecha_creacion)
       inner join conf.vlc_valor_catalogo vtipo on vtipo.vlc_id = 53 and vtipo.cat_id = 14
-      inner join seg.rou_rol_usuario rou on rou.tus_id = 5 and rou.usr_id = usr.usr_id
-      where ntf_resultado_validacion is null --and usr_fecha_creacion >= prg_fecha_auditoria
-	  and rou.usr_id = :usuario
+      inner join seg.rou_rol_usuario rou on rou.tus_id = 5 and rou.usr_id = :usuario
+      where ntf_resultado_validacion is null and usr_fecha_creacion >= prg_fecha_auditoria
     order by 7 asc"; 
   //Obtener solicitud atención por id
   public const _ATP_OBTENERXID = "SELECT atp_id id, c.cso_id casoid, rsp_id responsableid, atp_fecha fecha, atp_descripcion descripcion,
