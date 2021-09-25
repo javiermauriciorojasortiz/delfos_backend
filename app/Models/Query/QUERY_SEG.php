@@ -176,7 +176,7 @@ class QUERY_SEG {
   //Validar notificador
   public const _NTF_VALIDAR = "UPDATE oper.ntf_notificador SET usr_id_valida = :usuario, 
     ntf_fecha_valida = current_timestamp, ntf_anotacion_valida = :anotacion, ntf_resultado_validacion = :estado
-    WHERE ntf_id = :id and exist(select 1 from seg.rou_rol_usuario r where r.usr_id = :usuario and r.tus_id = 3)";
+    WHERE ntf_id = :id and exists(select 1 from seg.rou_rol_usuario r where r.usr_id = :usuario and r.tus_id = 3)";
   //Responsable establecer
   public const _RPS_INSERTAR = "INSERT INTO oper.rps_responsable(rps_id, rps_autoriza_email, rps_autoriza_sms,  
     rps_fecha_auditoria, usr_id_auditoria)

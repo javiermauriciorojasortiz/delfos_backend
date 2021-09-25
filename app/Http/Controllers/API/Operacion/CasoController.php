@@ -50,7 +50,11 @@ class CasoController extends Controller
                           "tipousuario"=> 1,
                           "metodoautenticacion"=> 3);
           $Usuario->enviarCorreo($params);
+        }
+        //Incluido para cuando el usuario ya existe pero no es responsable
+        try {
           $Usuario->insertarRolUsuario(array("usuarioid"=> $idUsuario,"tipousuarioid"=> 2, "entidadrol"=> 0));
+        } catch (Exception $th) {
         }
         $Responsable->establecerResponsable($idUsuario, $nuevo);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, true);
@@ -68,7 +72,11 @@ class CasoController extends Controller
                           "tipousuario"=> 1,
                           "metodoautenticacion"=> 3);
           $Usuario->enviarCorreo($params);
+        }
+        //Incluido para cuando el usuario ya existe pero no es responsable
+        try {
           $Usuario->insertarRolUsuario(array("usuarioid"=> $idUsuario,"tipousuarioid"=> 2, "entidadrol"=> 0));
+        } catch (Exception $th) {
         }
         $Responsable->establecerResponsable($idUsuario, $nuevo);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, false);

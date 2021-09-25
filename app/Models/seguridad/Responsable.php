@@ -22,16 +22,20 @@ class Responsable extends APPBASE {
     if(array_key_exists("autoriza_sms", $this->parametros)) $autorizaemail = $this->parametros["autoriza_sms"];
     $params = array("id" => $id, "autoriza_email" => $autorizaemail, "autoriza_sms" => $autorizasms);
     $rta = null;
-    if($nuevo) {//Insertar
+    if($nuevo == false) {//Actualizar
+      $rta =  $this->actualizarData(QUERY_SEG::_RPS_ACTUALIZAR, $params, true);
+      if($rta > 0){
+        $observacion = "Usuario ID: " . $params["id"] . ". Identificacion: " . $this->parametros["identificacion"];
+        $this->insertarAuditoria(ENUM_AUD::RESPONSABLE, $observacion, true, "M", ""); //Existe el usuario 
+      } else {
+        $nuevo = true;
+      }
+    } 
+    if($nuevo) { //Insertar si es nuevo
       if($this->usuarioID <= 0) $this->usuarioID = $id;
       $rta =  $this->actualizarData(QUERY_SEG::_RPS_INSERTAR, $params, true);
       $observacion = "Usuario ID: " . $params["id"] . ". Identificacion: " . $this->parametros["identificacion"];
       $this->insertarAuditoria(ENUM_AUD::RESPONSABLE, $observacion, true, "I", ""); //Existe el usuario  
-    } else { //Actualizar
-      
-      $rta =  $this->actualizarData(QUERY_SEG::_RPS_ACTUALIZAR, $params, true);
-      $observacion = "Usuario ID: " . $params["id"] . ". Identificacion: " . $this->parametros["identificacion"];
-      $this->insertarAuditoria(ENUM_AUD::RESPONSABLE, $observacion, true, "M", ""); //Existe el usuario  
     }
     return $rta;
   }

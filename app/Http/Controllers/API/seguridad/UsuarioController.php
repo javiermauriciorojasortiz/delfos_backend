@@ -250,10 +250,10 @@ class UsuarioController extends Controller
         try {
             $usuario->validarNotificador();
             DB::commit();
-            return array("codigo"=>1, "Exitoso");
+            return array("codigo"=>1, "descripcion"=> "Exitoso");
         } catch (Exception $ex) {
             DB::rollBack();
-            return array("codigo"=>0, $ex->getMessage());
+            return array("codigo"=>0, "descripcion"=> $ex->getMessage());
         }
         
     }
