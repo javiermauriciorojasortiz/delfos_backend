@@ -202,6 +202,11 @@ class Usuario extends Core {
       $this->insertarAuditoria(Core::$usuarioID, ENUM_AUD::ROL, $observacion, true, "I", ""); //Existe el usuario
       return $rta;
     }
+    //Validar si el rol existe en el usuario
+    public function validarRolUsuario(array $params = null){
+      $rta = (count($this->obtenerResultset(QUERY_SEG::_USR_VALIDARROL, $params))==0);
+      return $rta;
+    }
     //Eliminar roles de un usuario
     public function eliminarRolUsuario(){
       $rta = $this->actualizarData(QUERY_SEG::_USR_ELIMINARROL);

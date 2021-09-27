@@ -52,6 +52,9 @@ class QUERY_SEG {
   //Insertar rol Usuario
   public const _USR_INSERTARROL = "INSERT INTO seg.rou_rol_usuario (usr_id, tus_id, rou_entidadid, usr_id_auditoria, rou_fecha_auditoria)
       values(:usuarioid, :tipousuarioid, :entidadrol, :usuario, current_timestamp)";
+  //Validar si el rol del usuario existe
+  public const _USR_VALIDARROL = "SELECT 1 from seg.rou_rol_usuario 
+      WHERE usr_id=:usuarioid AND tus_id = :tipousuarioid AND rou_entidadid = :entidadrol";
   //Eliminar rol usuario
   public const _USR_ELIMINARROL = "DELETE FROM seg.rou_rol_usuario where usr_id = :usuarioid 
       and tus_id = :tipousuarioid and rou_entidadid = :entidadid";

@@ -37,6 +37,7 @@ class CasoController extends Controller
       $Usuario = new Usuario($request, ENUM_OPC::OPCION_GENERAL);
       $Responsable = new Responsable($request, ENUM_OPC::OPCION_GENERAL);
       $idCaso = $Caso->establecerPaciente(); 
+      $Caso->eliminarResponsablesCaso($idCaso);
       //Si debe modificarse el usuario principal
       if($Caso->parametros["responsableprincipal"]!= null) {
         $paramsUsuario = $Caso->parametros["responsableprincipal"];
@@ -52,10 +53,8 @@ class CasoController extends Controller
           $Usuario->enviarCorreo($params);
         }
         //Incluido para cuando el usuario ya existe pero no es responsable
-        try {
+        if($Usuario->validarRolUsuario(array("usuarioid"=> $idUsuario,"tipousuarioid"=> 2, "entidadrol"=> 0)))
           $Usuario->insertarRolUsuario(array("usuarioid"=> $idUsuario,"tipousuarioid"=> 2, "entidadrol"=> 0));
-        } catch (Exception $th) {
-        }
         $Responsable->establecerResponsable($idUsuario, $nuevo);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, true);
       }
@@ -74,10 +73,8 @@ class CasoController extends Controller
           $Usuario->enviarCorreo($params);
         }
         //Incluido para cuando el usuario ya existe pero no es responsable
-        try {
+        if($Usuario->validarRolUsuario(array("usuarioid"=> $idUsuario,"tipousuarioid"=> 2, "entidadrol"=> 0)))
           $Usuario->insertarRolUsuario(array("usuarioid"=> $idUsuario,"tipousuarioid"=> 2, "entidadrol"=> 0));
-        } catch (Exception $th) {
-        }
         $Responsable->establecerResponsable($idUsuario, $nuevo);
         $Caso->establecerRelacionResponsable($idCaso, $idUsuario, $tiporelacionid, false);
       }
@@ -85,7 +82,7 @@ class CasoController extends Controller
       return array("codigo" => 1, "descripcion" => "Exitoso");
     } catch(Exception $e) {
       DB::rollBack();
-      return array("codigo" => 0, "descripcion" => $e->getMessage());
+      return array("codigo" => 0, "descripcion" => $e->__toString() ); //$e->getMessage());
     }
   }
   //Obtener caso por id

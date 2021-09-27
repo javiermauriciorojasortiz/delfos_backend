@@ -5,6 +5,7 @@ namespace App\Models\Seguridad;
 use App\Models\APPBASE;
 use App\Models\Enum\ENUM_AUD;
 use App\Models\Query\QUERY_SEG;
+use Exception;
 use Illuminate\Http\Request;
 
 //Clase de gestión del usuario

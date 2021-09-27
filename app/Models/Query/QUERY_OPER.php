@@ -579,6 +579,8 @@ class QUERY_OPER {
                     or (tus_id = 10 and cso.eap_id = rou_entidadid) --Gerencial EAPB
                   )
                 )";
+  //Eliminar responsables caso
+  public const _CSO_ELIMINARRESPONSABLES = "DELETE FROM oper.rpc_responsable_caso WHERE cso_id = :casoid";
   //Activar caso
   public const _CSO_ACTIVAR = "UPDATE oper.cso_caso set cso_activo = true, vlc_id_causal_inactivo = null, usr_id_auditoria = :usuario, 
     cso_fecha_auditoria = current_timestamp

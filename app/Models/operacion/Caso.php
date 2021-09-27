@@ -87,6 +87,10 @@ class Caso extends APPBASE {
 			$this->actualizarData(QUERY_OPER::_RPC_INSERTAR, $params, true);
 		}
 	}
+	//Eliminar responsables casos
+	function eliminarResponsablesCaso(int $idCaso){
+		$this->actualizarData(QUERY_OPER::_CSO_ELIMINARRESPONSABLES,array("casoid"=>$idCaso));
+	}
 	//Activa un caso inactivo
 	function activarCaso(){
 		$params = array("id" => $this->parametros["id"]);

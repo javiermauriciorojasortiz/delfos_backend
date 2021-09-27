@@ -8,6 +8,7 @@ use DateTime;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 //Clase de gestión del usuario
 class APPBASE {
@@ -97,7 +98,14 @@ class APPBASE {
     if($incluirUsuario) 
       $parametros += ["usuario" => $this->usuarioID];
 
-    $rta = DB::update($consulta, $parametros);
+    // try {    
+      $rta = DB::update($consulta, $parametros);
+    // } catch (Exception $ex) {
+    //  report($ex);
+    //  $errorcode = rand();
+    //   Log::error($ex, array('context' => now() . $errorcode));
+    //   throw new Exception("Error de datos detectado. Contacte al administrador con el código " . $errorcode . " y este atenderá su caso o, por favor, intente nuevamente");
+    // }
     return $rta;  
   }
   //Insertar auditoria
